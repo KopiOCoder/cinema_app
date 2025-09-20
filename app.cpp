@@ -6,6 +6,7 @@
 #include <sstream>
 
 class Movie {
+public:
     int id; 
     std::string title;
     std::vector<double> features;
@@ -38,10 +39,21 @@ class MovieRecommender {
 public:
     std::vector<Movie> movies;
 
-    void LoadMovieFeatures(const std::string& featuresFile, const std::string& titleFile) {
-        std::vector<std::string> titles;
-        std::ifstream titleStream(titleFile);
+    void loadMovies(const std::string& filename) {
+        std::ifstream file(filename);
         std::string line;
+        std::getline(file, line);
+
+        while (std::getline(file, line)) {
+            std::stringstream ss(line);
+            std::string movieId, title, genres;
+
+            std::getline(ss, movieId, ',');
+            std::getline(ss, title, ',');
+            std::getline(ss, genres);
+
+            movies.push_back(Movie(std::stoi(movieId), title, genres));
+        }
     }
 };
     
