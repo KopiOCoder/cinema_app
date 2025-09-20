@@ -6,12 +6,13 @@
 #include <sstream>
 
 class Movie {
+public:
     int id; 
     std::string title;
     std::vector<double> features;
     
     Movie(int id, std::string title, std::string genres) : id(id), title(title) {
-        features.resize(5, 0.0);
+        features.resize(18, 0.0);
         if (genres.find("Comedy") != std::string::npos) features[0] = 1.0;
         if (genres.find("Action") != std::string::npos) features[1] = 1.0;
         if (genres.find("Drama") != std::string::npos) features[2] = 1.0;
@@ -38,10 +39,60 @@ class MovieRecommender {
 public:
     std::vector<Movie> movies;
 
-    void LoadMovieFeatures(const std::string& featuresFile, const std::string& titleFile) {
-        std::vector<std::string> titles;
-        std::ifstream titleStream(titleFile);
+    void loadMovies(const std::string& filename) {
+        std::ifstream file(filename);
         std::string line;
+        std::getline(file, line);
+
+        while (std::getline(file, line)) {
+            std::stringstream ss(line);
+            std::string movieId, title, genres;
+
+            std::getline(ss, movieId, ',');
+            std::getline(ss, title, ',');
+            std::getline(ss, genres);
+
+            movies.push_back(Movie(std::stoi(movieId), title, genres));
+        }
+    }
+
+    double Similarity(const Movie& movie1, const Movie& movie2) {
+        double dotProduct = 0.0;
+        double norm1 = 0.0;
+        double norm2 = 0.0;
+
+        for (size_t i=0; i < movie1.features.size(); i++) {
+            dotProduct += movie1.features[i] * movie2.features[i];
+            norm1 += movie1.features[i] * movie1.features[i];
+            norm2 += movie2.features[i] * movie2.features[i];
+        }
+        if (norm1 == 0 || norm2 == 0) return 0;
+        return dotProduct / (sqrt(norm1) * sqrt(norm2));
+    }
+
+    void getSimilar(int movieId) {
+        Movie* target = nullptr;
+        for (auto& movie : movies) {
+            if (movie.id == movieId) {
+                target = &movie;
+                break;
+            }
+        }
+
+        if (!target) {
+            std::cout << "movie not found" << std::endl;
+            return;
+        }
+
+        for (auto& movie : movies) {
+            if (movie.id != movieId) {
+                double sim = Similarity(*target, movie);
+                if (sim > 0.0) {
+                    std::cout << movie.title << " - " << sim << std::endl;
+                }
+            }
+        }
     }
 };
+
     
