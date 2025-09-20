@@ -55,5 +55,19 @@ public:
             movies.push_back(Movie(std::stoi(movieId), title, genres));
         }
     }
+
+    double Similarity(const Movie& movie1, const Movie& movie2) {
+        double dotProduct = 0.0;
+        double norm1 = 0.0;
+        double norm2 = 0.0;
+
+        for (size_t i=0; i < movie1.features.size(); i++) {
+            dotProduct += movie1.features[i] * movie2.features[i];
+            norm1 += movie1.features[i] * movie1.features[i];
+            norm2 += movie2.features[i] * movie2.features[i];
+        }
+        if (norm1 == 0 || norm2 == 0) return 0;
+        return dotProduct / (sqrt(norm1) * sqrt(norm2));
+    }
 };
     
