@@ -12,7 +12,7 @@ public:
     std::vector<double> features;
     
     Movie(int id, std::string title, std::string genres) : id(id), title(title) {
-        features.resize(5, 0.0);
+        features.resize(18, 0.0);
         if (genres.find("Comedy") != std::string::npos) features[0] = 1.0;
         if (genres.find("Action") != std::string::npos) features[1] = 1.0;
         if (genres.find("Drama") != std::string::npos) features[2] = 1.0;
@@ -69,5 +69,30 @@ public:
         if (norm1 == 0 || norm2 == 0) return 0;
         return dotProduct / (sqrt(norm1) * sqrt(norm2));
     }
+
+    void getSimilar(int movieId) {
+        Movie* target = nullptr;
+        for (auto& movie : movies) {
+            if (movie.id == movieId) {
+                target = &movie;
+                break;
+            }
+        }
+
+        if (!target) {
+            std::cout << "movie not found" << std::endl;
+            return;
+        }
+
+        for (auto& movie : movies) {
+            if (movie.id != movieId) {
+                double sim = Similarity(*target, movie);
+                if (sim > 0.0) {
+                    std::cout << movie.title << " - " << sim << std::endl;
+                }
+            }
+        }
+    }
 };
+
     
