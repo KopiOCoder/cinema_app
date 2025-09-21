@@ -57,3 +57,27 @@ def similarity(features1, features2):
         return 0
     
     return dot_product / (math.sqrt(norm1) * math.sqrt(norm2))
+
+def inference(movies, target_id):
+    target_movie = None
+    for movie in movies:
+        if movie['id'] == target_id:
+            target_movie = movie
+            break
+    
+    if not target_movie:
+        return None 
+    
+    results = []
+    for movie in movies:
+        if movie['id'] != target_id:
+            sim = similarity(target_movie['features'], movie['features'])
+            if sim > 0.0:
+                results.append({
+                    'title': movie['title'],
+                    'similarity': sim
+                })
+
+    results.sort(key=lambda x: x['similarity'], reverse=True)
+    results = results[:20]
+    return {'target_title': target_movie['title'], 'similar_movies': results}
