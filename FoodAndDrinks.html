@@ -1,23 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cinema Food Menu</title>
+    <!-- Use the Inter font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Apply custom styles -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #111827;
             color: #ffffff;
-            /* We remove the body flex properties to handle the overall page layout */
             min-height: 100vh;
         }
         
         .food-menu-container {
             display: flex;
             flex-wrap: wrap; 
-            justify-content: center;
+            justify-content: center; 
             align-items: flex-start; 
             padding: 2rem;
-            gap: 2rem;
+            gap: 2rem; 
         }
         
         .food-item-card {
@@ -38,7 +45,7 @@
             border-radius: 0.5rem;
             width: 100%;
             height: 12rem;
-            object-fit: contain;
+            object-fit: contain; 
             margin-bottom: 1.5rem;
         }
         .food-item-card h1 {
@@ -76,57 +83,191 @@
         .food-item-card button:hover {
             background-color: #047857;
         }
+        
+        /* New style for the recommendation section */
+        #recommendationContainer {
+            text-align: center;
+            padding: 2rem;
+            background-color: #1f2937;
+            border-radius: 1rem;
+            max-width: 50rem;
+            margin: 2rem auto;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: none; /* We hide it by default */
+        }
+        #recommendationContainer h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        #recommendedItem {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #34d399;
+        }
+        
     </style>
 </head>
 <body class="antialiased">
 
-    <!-- Food Menu Container -->
-    <div class="food-menu-container">
-
-        <!-- Popcorn Card -->
-        <div class="food-item-card">
-            <h1>Popcorn</h1>
-            <img src="./popcorn.png" alt="Classic Popcorn">
-            <p>Corn that has been popped</p>
-            <div class="price-container">
-                <span class="tag">$6.50</span>
-                <button>Add to Cart</button>
-            </div>
-        </div>
-
-        <!-- Coca Cola Card -->
-        <div class="food-item-card">
-            <h1>Coca Cola</h1>
-            <img src="./cocacola.png" alt="Coca Cola Soda">
-            <p>Black color water with sugar</p>
-            <div class="price-container">
-                <span class="tag">$8.50</span>
-                <button>Add to Cart</button>
-            </div>
-        </div>
-
-        <!-- Pepsi Card -->
-        <div class="food-item-card">
-            <h1>Pepsi</h1>
-            <img src="./pepsi.png" alt="Pepsi Soda">
-            <p>Another black color water with sugar.</p>
-            <div class="price-container">
-                <span class="tag">$8.50</span>
-                <button>Add to Cart</button>
-            </div>
-        </div>
-
-        <!-- Coffee Card -->
-        <div class="food-item-card">
-            <h1>Coffee</h1>
-            <img src="./kofi.png" alt="Hot Coffee">
-            <p>make u go brrrrrr</p>
-            <div class="price-container">
-                <span class="tag">$6.50</span>
-                <button>Add to Cart</button>
-            </div>
-        </div>
+    <!-- New Recommendation Section -->
+    <div id="recommendationContainer">
+        <h2>You might also like...</h2>
+        <p id="recommendedItem"></p>
     </div>
 
+    <!-- Food Menu Container -->
+    <div class="food-menu-container" id="foodMenuContainer">
+        <!-- Food cards will be dynamically inserted here -->
+    </div>
+
+    <script>
+        // Step 1: Create a JavaScript "database" for our food items
+        const foodData = [
+            {
+                name: 'Popcorn',
+                description: 'Corn that popped',
+                price: 12.00,
+                category: 'Snack',
+                image: 'https://placehold.co/600x400/22c55e/ffffff?text=Popcorn'
+            },
+            {
+                name: 'Nacho',
+                description: 'Triangle thingy with cheese',
+                price: 10.00,
+                category: 'Snack',
+                image: 'https://placehold.co/600x400/22c55e/ffffff?text=Popcorn'
+            },
+            {
+                name: 'Hotdog',
+                description: 'No actual dogs ya',
+                price: 9.00,
+                category: 'Snack',
+                image: 'https://placehold.co/600x400/22c55e/ffffff?text=Popcorn'
+            },
+            {
+                name: 'Ice Lemon Tea',
+                description: 'ice & lemon slice in water cup',
+                price: 8.50,
+                category: 'Drink',
+                image: 'https://placehold.co/600x400/C72857/ffffff?text=Soda'
+            },
+            {
+                name: 'Pepsi',
+                description: 'Sweet Black Liquid',
+                price: 8.50,
+                category: 'Drink',
+                image: 'https://placehold.co/600x400/C72857/ffffff?text=Soda'
+            },
+            {
+                name: 'Coffee',
+                description: 'Wesley approved',
+                price: 6.50,
+                category: 'Drink',
+                image: 'https://placehold.co/600x400/C72857/ffffff?text=Coffee'
+            }
+        ];
+
+        // Our simple graph-like data structure
+        // The keys are the food items (nodes), and the values are other items purchased with it (edges).
+        // The numbers represent the "strength" of the connection.
+        const itemConnections = {
+            'Popcorn': {
+                'Coca Cola': 3,
+                'Pepsi': 1,
+                'Coffee': 0
+            },
+            'Coca Cola': {
+                'Popcorn': 3,
+                'Pepsi': 0,
+                'Coffee': 0
+            },
+            'Pepsi': {
+                'Popcorn': 1,
+                'Coca Cola': 0,
+                'Coffee': 1
+            },
+            'Coffee': {
+                'Popcorn': 0,
+                'Coca Cola': 0,
+                'Pepsi': 1
+            }
+        };
+
+        // Step 2: A function to generate and display the food cards
+        function renderFoodItems() {
+            const container = document.getElementById('foodMenuContainer');
+            container.innerHTML = '';
+            
+            foodData.forEach(item => {
+                const card = document.createElement('div');
+                card.classList.add('food-item-card');
+                
+                card.innerHTML = ` 
+                    <!-- For the name of the items -->               
+                    <h1>${item.name}</h1>
+
+                    <!-- For price -->
+                    <img src="${item.image}" alt="${item.name}">
+                    <p>${item.description}</p>
+                    <div class="price-container">
+                        <span class="tag">RM${item.price.toFixed(2)}</span>
+                        <button onclick="addToCart('${item.name}')">Add to Cart</button>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        // This is our powerful graph-based recommendation logic
+        function getRecommendation(itemName) {
+            // Find the connections for the item the user added
+            const connections = itemConnections[itemName];
+            
+            // This will hold the best recommendation and its weight (connection strength)
+            let bestMatch = null;
+            let maxWeight = 0;
+            
+            // Loop through all the connections for the item
+            for (const connectedItem in connections) {
+                // If this connection is stronger than the current best one...
+                if (connections[connectedItem] > maxWeight) {
+                    // ...and it's not the same item that was added
+                    if (connectedItem !== itemName) {
+                        // ...then it's our new best match!
+                        maxWeight = connections[connectedItem];
+                        bestMatch = connectedItem;
+                    }
+                }
+            }
+            
+            // Return the best match (or null if no strong connection was found)
+            return bestMatch;
+        }
+
+        // Step 3: This function now handles adding to cart AND showing a recommendation
+        function addToCart(itemName) {
+            console.log(`Added ${itemName} to cart. Now, let's find a recommendation!`);
+            
+            // Run our graph-based logic to find the best match
+            const recommendation = getRecommendation(itemName);
+            const recommendationContainer = document.getElementById('recommendationContainer');
+            const recommendedItemElement = document.getElementById('recommendedItem');
+
+            // If we found a good match...
+            if (recommendation) {
+                // ...update the text and show the recommendation box!
+                recommendedItemElement.textContent = recommendation;
+                recommendationContainer.style.display = 'block';
+            } else {
+                // Otherwise, hide the box
+                recommendationContainer.style.display = 'none';
+            }
+        }
+
+        // Step 4: Call the function to display the cards when the page loads
+        renderFoodItems();
+    </script>
 </body>
 </html>
