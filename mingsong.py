@@ -19,13 +19,29 @@ def display_summary(num_adults, num_children, total_fare):
 
 def payment():
     print("\n" + "="*30)
-    print("      💳 Payment")
+    print("      💳 Card Payment")
     print("="*30)
-    input("Please press Enter to pay...")
+    
+    card_number = input("Enter card number (16 digits): ")
+    if not card_number.isdigit() or len(card_number) != 16:
+        print("❌ Invalid card number. Please enter a 16-digit number.")
+        return False
+
+    cvv = input("Enter CVV (3 digits): ")
+    if not cvv.isdigit() or len(cvv) != 3:
+        print("❌ Invalid CVV. Please enter a 3-digit number.")
+        return False
+
+    expiry_date = input("Enter expiry date (MM/YY): ")
+    if len(expiry_date) != 5 or expiry_date[2] != '/':
+        print("❌ Invalid expiry date format. Please use MM/YY.")
+        return False
+        
     print("\nProcessing payment...")
     time.sleep(2) 
     print("Payment successful! 🎉")
     time.sleep(1)
+    return True
 
 def print_receipt(num_adults, num_children, total_fare):
     print("\n" + "="*30)
@@ -54,9 +70,12 @@ def main():
 
         confirm = input("Would you like to proceed to payment? (yes/no): ").lower()
         if confirm == 'yes':
-            payment()
-            
-            print_receipt(num_adults, num_children, total_price)
+           
+            if payment():
+                print_receipt(num_adults, num_children, total_price)
+            else:
+                
+                print("Payment failed. Order cancelled.")
         else:
             print("Order cancelled. Thank you for visiting.")
         
