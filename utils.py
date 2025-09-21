@@ -42,3 +42,18 @@ def load_csv(filename):
             movies.append(movie)
     
     return movies
+
+def similarity(features1, features2):
+    dot_product = 0.0
+    norm1 = 0.0
+    norm2 = 0.0
+    
+    for i in range(len(features1)):
+        dot_product += features1[i] * features2[i]
+        norm1 += features1[i] * features1[i]
+        norm2 += features2[i] * features2[i]
+    
+    if norm1 == 0 or norm2 == 0:
+        return 0
+    
+    return dot_product / (math.sqrt(norm1) * math.sqrt(norm2))
