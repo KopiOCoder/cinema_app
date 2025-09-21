@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 import time
 import datetime
 
@@ -134,12 +134,15 @@ class PaymentFrame(tk.Frame):
         self.status_label = tk.Label(self, text="", fg="red")
         self.status_label.pack()
 
+        self.progress_bar = ttk.Progressbar(self, orient="horizontal", mode="indeterminate")
+
     def process_payment(self):
         card = self.card_entry.get()
         cvv = self.cvv_entry.get()
         expiry = self.expiry_entry.get()
 
-        if not card.isdigit() or len(card) != 16:
+        #TESTING....REMEMBER ADJUST BACK TO 16
+        if not card.isdigit() or len(card) != 1:
             self.status_label.config(text="❌ Invalid card number.")
             return
         if not cvv.isdigit() or len(cvv) != 3:
@@ -151,6 +154,9 @@ class PaymentFrame(tk.Frame):
         
         #Simulate payment processing
         self.status_label.config(text="Processing payment...")
+        self.progress_bar.pack(pady=10)
+        self.progress_bar.start(10)
+        
         self.update_idletasks()
         time.sleep(2)
         
