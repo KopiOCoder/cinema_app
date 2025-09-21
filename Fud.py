@@ -182,32 +182,81 @@ def create_menu_items(parent_frame, food_data):
 # Main application setup
 root = tk.Tk()
 root.title("Cinema Food Kiosk")
-root.geometry("800x600")
+root.geometry("800x600+0+0")
 root.config(bg=MainBG)
 
-# We use a grid to separate the menu and the cart
-root.grid_columnconfigure(0, weight=3) # Menu column
-root.grid_columnconfigure(1, weight=1) # Cart column
+# --- Layout Frames ---
+# The main grid is now simpler
+root.grid_columnconfigure(0, weight=3, uniform="group1") # Menu column
+root.grid_columnconfigure(1, weight=1, uniform="group1") # Cart column
 root.grid_rowconfigure(0, weight=1)
 
-# Frame for the food menu on the left
+# Create a master frame for the menu area to contain the canvas and scrollbar
 menu_frame = tk.Frame(root, bg=MainBG)
 menu_frame.grid(row=0, column=0, sticky="nsew", padx=20, pady=20)
 
-# Make the columns in the menu_frame expandable
-menu_frame.grid_columnconfigure(0, weight=1)
-menu_frame.grid_columnconfigure(1, weight=1)
-menu_frame.grid_columnconfigure(2, weight=1)
+# --- Scrollable Menu ---
+# Place the canvas and scrollbar inside the new menu_frame
+menu_frame.grid_columnconfigure(0, weight=1)  # Canvas column
+menu_frame.grid_columnconfigure(1, weight=0, minsize=20)  # Scrollbar column
+menu_frame.grid_rowconfigure(0, weight=1)
 
-# Frame for the shopping cart on the right
+menu_canvas = tk.Canvas(menu_frame, bg=MainBG, highlightthickness=0)
+menu_canvas.grid(row=0, column=0, sticky="nsew")
+
+menu_scrollbar = tk.Scrollbar(menu_frame, orient="vertical", command=menu_canvas.yview)
+menu_scrollbar.grid(row=0, column=1, sticky="ns")
+menu_canvas.configure(yscrollcommand=menu_scrollbar.set)
+
+# Frame inside the canvas
+scrollable_menu_frame = tk.Frame(menu_canvas, bg=MainBG)
+# Give the created window a tag so we can resize it later
+menu_canvas_window = menu_canvas.create_window(
+    (0, 0),
+    window=scrollable_menu_frame,
+    anchor="nw",
+    tags="menu_frame"
+)
+
+# Expand columns inside scrollable frame
+scrollable_menu_frame.grid_columnconfigure(0, weight=1)
+scrollable_menu_frame.grid_columnconfigure(1, weight=1)
+scrollable_menu_frame.grid_columnconfigure(2, weight=1)
+
+# Update scrollregion when frame grows
+def on_frame_configure(event):
+    menu_canvas.configure(scrollregion=menu_canvas.bbox("all"))
+
+scrollable_menu_frame.bind("<Configure>", on_frame_configure)
+
+# Keep inner frame width synced with canvas width
+def on_canvas_configure(event):
+    menu_canvas.itemconfig("menu_frame", width=event.width)
+
+menu_canvas.bind("<Configure>", on_canvas_configure)
+
+# Cross-platform mousewheel scrolling
+def on_mousewheel(event):
+    if event.num == 4:  # Linux scroll up
+        menu_canvas.yview_scroll(-1, "units")
+    elif event.num == 5:  # Linux scroll down
+        menu_canvas.yview_scroll(1, "units")
+    else:  # Windows/Mac
+        menu_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+menu_canvas.bind_all("<MouseWheel>", on_mousewheel)   # Windows/Mac
+menu_canvas.bind_all("<Button-4>", on_mousewheel)     # Linux scroll up
+menu_canvas.bind_all("<Button-5>", on_mousewheel)     # Linux scroll down
+
+
+# --- Cart Frame ---
 cart_frame = tk.Frame(root, bg="#2d3748", relief=tk.SOLID, borderwidth=1)
 cart_frame.grid(row=0, column=1, sticky="nsew", padx=(0, 20), pady=20)
 
-# Make the columns in the cart_frame expandable
 cart_frame.grid_columnconfigure(0, weight=1)
 
 # Add main titles to each frame
-menu_title_label = tk.Label(menu_frame, text="Select Your Food and Drinks", font=('Helvetica', 18, 'bold'), bg=MainBG, fg=MainFG)
+menu_title_label = tk.Label(scrollable_menu_frame, text="Select Your Food and Drinks", font=('Helvetica', 18, 'bold'), bg=MainBG, fg=MainFG)
 menu_title_label.grid(row=0, column=0, columnspan=3, pady=10)
 
 cart_title_label = tk.Label(cart_frame, text="Your Cart", font=('Helvetica', 18, 'bold'), bg="#2d3748", fg=MainFG)
@@ -216,6 +265,6 @@ cart_title_label.grid(row=0, column=0, pady=10, sticky="ew")
 # Open the JSON data and create the menu
 food_data = open_json_db()
 if food_data:
-    create_menu_items(menu_frame, food_data)
+    create_menu_items(scrollable_menu_frame, food_data)
     
 root.mainloop()
