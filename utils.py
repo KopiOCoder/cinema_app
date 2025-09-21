@@ -24,3 +24,21 @@ def create_features(genres):
     if "War" in genres: features[17] = 1.0
 
     return features
+
+def load_csv(filename):
+    movies = []
+    
+    with open(filename, 'r', encoding="utf-8-sig") as file:
+        reader = csv.reader(file)
+        next(reader)  
+        
+        for row in reader:
+            movie = {
+                'id': int(row[0]),
+                'title': row[1],
+                'genres': row[2],
+                'features': create_features(row[2])
+            }
+            movies.append(movie)
+    
+    return movies
