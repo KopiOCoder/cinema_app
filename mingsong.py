@@ -68,17 +68,25 @@ def main():
 
         display_summary(num_adults, num_children, total_price)
 
-        confirm = input("Would you like to proceed to payment? (yes/no): ").lower()
-        if confirm == 'yes':
-           
-            if payment():
-                print_receipt(num_adults, num_children, total_price)
+        while True:
+
+            confirm = input("Would you like to proceed to payment? (yes/no): ").lower()
+            if confirm == 'yes':
+            
+                if payment():
+                    print_receipt(num_adults, num_children, total_price)
+                else:
+                    
+                    print("Payment failed. Order cancelled.")
+                    break
+
+            elif confirm == 'no':
+                print("Order cancelled. Thank you for visiting.")
+                break
+
             else:
-                
-                print("Payment failed. Order cancelled.")
-        else:
-            print("Order cancelled. Thank you for visiting.")
-        
+                print("Invalid input. Please enter 'yes' or 'no'.")
+            
     except ValueError:
         print("Invalid input. Please enter a valid number.")
 
