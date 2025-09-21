@@ -161,6 +161,14 @@ class PaymentFrame(tk.Frame):
     def tkraise(self, *args, **kwargs):
         #starts the countdown and timer when the frame is shown
         self.start_countdown()
+
+        self.progress_bar.stop()
+        self.progress_bar.pack_forget()
+        self.status_label.config(text="")
+        self.card_entry.delete(0, tk.END)
+        self.cvv_entry.delete(0, tk.END)
+        self.expiry_entry.delete(0, tk.END)
+        
         super().tkraise(*args, **kwargs)
 
     def start_countdown(self):
