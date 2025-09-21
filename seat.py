@@ -10,12 +10,35 @@ seat_map = {}
 selected_seats = []  
 seat_btn = {} 
 
-# Fill seat map
+def payment_pg():
+    if not selected_seats:
+        messagebox.showwarning("No Selection", "Please select at least one seat")
+        return
+
+    payment_wdw = tk.Toplevel(root)
+    payment_wdw.title("Payment")
+    payment_wdw.geometry("350x250")
+    
+    tk.Label(payment_wdw, text="Payment Page", font=("Arial", 12, "bold")).pack(pady=10)
+    tk.Label(payment_wdw, text=f"Selected Seats: {', '.join(selected_seats)}",
+             font=("Arial", 12)).pack(pady=10)
+    
+    def confirm_payment():
+        for seat in selected_seats:
+            seat_map[seat] = True
+            seat_btn[seat].config(text="❌", bg="gray", width=4, height=2)
+        messagebox.showinfo("Success", f"Seats {', '.join(selected_seats)} booked successfully ✅")
+        selected_seats.clear()
+        payment_wdw.destroy()
+    
+    tk.Button(payment_wdw, text="Confirm Payment", bg="green", fg="white",
+              font=("Arial", 12, "bold"), command=confirm_payment).pack(pady=20)
+
 for row in rows_top:
-    for num in range(1, 9):  # 1–8 seats
+    for num in range(1, 9):  
         seat_map[f"{row}{num}"] = False
 for row in rows_bottom:
-    for num in range(1, 11):  # 1–10 seats
+    for num in range(1, 11):  
         seat_map[f"{row}{num}"] = False
 
 def choose_seat(seat, btn):
@@ -85,6 +108,7 @@ for r, row in enumerate(rows_bottom, start=gap_row + 1):
 
     tk.Label(seat_frame, text=row,font=("Arial", 12, "bold")).grid(row=r, column=11, padx=10)
 
-
+tk.Button(root, text="Proceed to Payment", bg="blue", fg="white",
+          font=("Arial", 14, "bold"), command=payment_pg).pack(pady=20)
 root.mainloop()
 
