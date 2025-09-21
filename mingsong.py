@@ -68,6 +68,10 @@ class TicketSelectionFrame(tk.Frame):
             if adults < 0 or children < 0:
                 self.status_label.config(text="Number of tickets cannot be negative.")
                 return
+            
+            if adults == 0 and children == 0:
+                self.status_label.config(text="Please select at least one ticket.")
+                return
 
             self.controller.num_adults = adults
             self.controller.num_children = children
