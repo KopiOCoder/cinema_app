@@ -1,4 +1,5 @@
 import time
+import datetime
 
 def calculate_fare(num_adults, num_children):
     ADULT_PRICE = 15.00
@@ -22,8 +23,9 @@ def payment():
     print("      💳 Card Payment")
     print("="*30)
     
+    #testing first
     card_number = input("Enter card number (16 digits): ")
-    if not card_number.isdigit() or len(card_number) != 16:
+    if not card_number.isdigit() or len(card_number) != 1:
         print("❌ Invalid card number. Please enter a 16-digit number.")
         return False
 
@@ -44,9 +46,16 @@ def payment():
     return True
 
 def print_receipt(num_adults, num_children, total_fare):
+    current = datetime.datetime.now()
+    receipt_time = current.strftime("%I:%M %p") # Format as HH:MM AM/PM
+    receipt_date = current.strftime("%d %B %Y") # Format as Day Month Year
+    
     print("\n" + "="*30)
     print("      🎥 Cinema Ticket Receipt")
     print("="*30)
+    print(f"Date: {receipt_date}")
+    print(f"Time: {receipt_time}")
+    print("-"*30)
     print(f"Adult Tickets: {num_adults} x $15.00")
     print(f"Child Tickets: {num_children} x $10.00")
     print("-"*30)
@@ -78,7 +87,7 @@ def main():
                 else:
                     
                     print("Payment failed. Order cancelled.")
-                    break
+                break   
 
             elif confirm == 'no':
                 print("Order cancelled. Thank you for visiting.")
