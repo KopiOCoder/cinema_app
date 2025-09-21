@@ -124,6 +124,12 @@ class PaymentFrame(tk.Frame):
         title = tk.Label(self, text="💳 Card Payment", font=("Arial", 16, "bold"))
         title.pack(pady=10)
 
+        #countdown timer 
+        self.countdown_label = tk.Label(self, text="Time Remaining: 60", font=("Arial", 10, "bold"), fg="blue")
+        self.countdown_label.pack(pady=5)
+        self.time_remaining = 60
+        self.timer_id = None
+
         tk.Label(self, text="Card Number (16 digits):").pack()
         self.card_entry = tk.Entry(self)
         self.card_entry.pack()
@@ -142,6 +148,36 @@ class PaymentFrame(tk.Frame):
 
         self.progress_bar = ttk.Progressbar(self, orient="horizontal", mode="indeterminate")
 
+    def tkraise(self, *args, **kwargs):
+        #starts the countdown and timer when the frame is shown
+        self.start_countdown()
+        super().tkraise(*args, **kwargs)
+
+    def start_countdown(self):
+        #resets the timer and starts the countdown
+        self.time_remaining = 10
+        self.countdown_label.config(text=f"Time Remaining: {self.time_remaining}", fg="green")
+        if self.timer_id:
+            self.after_cancel(self.timer_id) 
+        self.countdown_timer()
+    
+    def countdown_timer(self):
+        if self.time_remaining > 0:
+            self.time_remaining -= 1
+            self.countdown_label.config(text=f"Time Remaining: {self.time_remaining}")
+
+            #change color for a sense of urgency :D
+            if self.time_remaining < 5:
+                self.countdown_label.config(fg="red")
+            
+            self.timer_id = self.after(1000, self.countdown_timer) 
+        else:
+            self.cancel_order_timeout()
+
+    def cancel_order_timeout(self):
+        messagebox.showwarning("Order Timeout", "Order cancelled due to timeout.")
+        self.controller.show_frame("TicketSelectionFrame")
+
     def process_payment(self):
         card = self.card_entry.get()
         cvv = self.cvv_entry.get()
@@ -158,13 +194,22 @@ class PaymentFrame(tk.Frame):
             self.status_label.config(text="❌ Invalid expiry date format.")
             return
         
+        if self.timer_id:
+            self.after_cancel(self.timer_id)
+
         #Simulate payment processing
         self.status_label.config(text="Processing payment...")
         self.progress_bar.pack(pady=10)
         self.progress_bar.start(3)
         
-        self.update_idletasks()
-        time.sleep(2)
+        self.after(1000, self.process_payment_completed)
+
+    def process_payment_completed(self):
+        self.progress_bar.stop()
+
+        self.card_entry.delete(0, tk.END)
+        self.cvv_entry.delete(0, tk.END)
+        self.expiry_entry.delete(0, tk.END)
         
         messagebox.showinfo("Payment Status", "Payment successful! 🎉")
         self.controller.show_frame("ReceiptFrame")
