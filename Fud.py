@@ -126,41 +126,58 @@ def addtoCart(item):
 
 def create_menu_items(parent_frame, food_data):
     """
-    Dynamically creates and displays a card for each food item.
+    Dynamically creates and displays a card for each food item, grouped by category.
     """
-    # Start placing cards from row 1 to leave room for the title in row 0
-    row, col = 1, 0
+    # Group items by category
+    categories = {}
     for item in food_data:
-        # Create a new Frame to serve as the "card" for each item
-        item_card = tk.Frame(parent_frame, bg=CardBG, relief=tk.GROOVE, borderwidth=2)
-        item_card.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
-        
-        # Make the single column inside the item card expandable
-        item_card.grid_columnconfigure(0, weight=1)
+        category = item.get('category', 'Misc') # Default to 'Misc' if no category is found
+        if category not in categories:
+            categories[category] = []
+        categories[category].append(item)
 
-        # --- Widgets inside the card ---
-        # Item Name Label
-        name_label = tk.Label(item_card, text=item['name'], font=('Helvetica', 14, 'bold'), bg=CardBG, fg=MainFG)
-        name_label.grid(row=0, column=0, pady=(10, 5))
-        
-        # Item Description Label
-        desc_label = tk.Label(item_card, text=item['description'], font=('Helvetica', 10), wraplength=200, bg=CardBG, fg=MainFG)
-        desc_label.grid(row=1, column=0, padx=10)
-        
-        # Item Price Label
-        price_label = tk.Label(item_card, text=f"RM{item['price']:.2f}", font=('Helvetica', 12, 'bold'), bg=CardBG, fg=MainFG)
-        price_label.grid(row=2, column=0, pady=(5, 10))
-        
-        # Add to Cart Button
-        # We use a lambda to pass the specific 'item' to the addtoCart function
-        add_button = tk.Button(item_card, text="Add to Cart", font=('Helvetica', 10, 'bold'), bg="#10b981", fg="white", activebackground="#059669", activeforeground="white", relief="flat", command=lambda i=item: addtoCart(i))
-        add_button.grid(row=3, column=0, pady=10, padx=20, sticky="ew")
+    row = 1 # Start from row 1 to leave space for the main title
+    for category_name, items in categories.items():
+        # Add a label for the category
+        category_label = tk.Label(
+            parent_frame,
+            text=category_name,
+            font=('Helvetica', 16, 'bold'),
+            bg=MainBG,
+            fg=MainFG,
+            pady=10
+        )
+        category_label.grid(row=row, column=0, columnspan=3, sticky="ew")
+        row += 1
 
-        # Update the grid position for the next card
-        col += 1
-        if col > 2:  # 3 columns per row
-            col = 0
-            row += 1
+        # Place the items for the current category
+        col = 0
+        for item in items:
+            # Create a new Frame for each item card
+            item_card = tk.Frame(parent_frame, bg=CardBG, relief=tk.GROOVE, borderwidth=2)
+            item_card.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
+            item_card.grid_columnconfigure(0, weight=1)
+
+            # --- Widgets inside the card ---
+            name_label = tk.Label(item_card, text=item['name'], font=('Helvetica', 14, 'bold'), bg=CardBG, fg=MainFG)
+            name_label.grid(row=0, column=0, pady=(10, 5))
+            
+            desc_label = tk.Label(item_card, text=item['description'], font=('Helvetica', 10), wraplength=200, bg=CardBG, fg=MainFG)
+            desc_label.grid(row=1, column=0, padx=10)
+            
+            price_label = tk.Label(item_card, text=f"RM{item['price']:.2f}", font=('Helvetica', 12, 'bold'), bg=CardBG, fg=MainFG)
+            price_label.grid(row=2, column=0, pady=(5, 10))
+            
+            add_button = tk.Button(item_card, text="Add to Cart", font=('Helvetica', 10, 'bold'), bg="#10b981", fg="white", activebackground="#059669", activeforeground="white", relief="flat", command=lambda i=item: addtoCart(i))
+            add_button.grid(row=3, column=0, pady=10, padx=20, sticky="ew")
+
+            # Update the grid position for the next card
+            col += 1
+            if col > 2:
+                col = 0
+                row += 1
+        
+        row += 1 # Move to the next row after a full row of items, or to prepare for the next category header
 
 # Main application setup
 root = tk.Tk()
