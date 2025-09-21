@@ -16,6 +16,9 @@ def calculate_fare(num_adults, num_children):
     CHILD_PRICE = 10.00
     return (num_adults * ADULT_PRICE) + (num_children * CHILD_PRICE)
 
+def return_to_ticket_selection(self):
+        self.controller.show_frame("TicketSelectionFrame")
+
 
 #tkinter setup
 
@@ -66,6 +69,13 @@ class TicketSelectionFrame(tk.Frame):
         self.status_label = tk.Label(self, text="", fg="red")
         self.status_label.pack()
 
+    def tkraise(self, *args, **kwargs):
+        # Clears the entry fields and status label when this frame is shown
+        self.adult_entry.delete(0, tk.END)
+        self.child_entry.delete(0, tk.END)
+        self.status_label.config(text="")
+        super().tkraise(*args, **kwargs)
+
     def calculate(self):
         try:
             adults = int(self.adult_entry.get())
@@ -103,7 +113,7 @@ class SummaryFrame(tk.Frame):
         tk.Button(self, text="Cancel Order", command=self.cancel_order).pack(pady=5)
 
     def tkraise(self, *args, **kwargs):
-        # Update summary 
+        #Update summary 
         adults = self.controller.num_adults
         children = self.controller.num_children
         total = self.controller.total_price
@@ -227,7 +237,7 @@ class ReceiptFrame(tk.Frame):
         self.receipt_label.pack(pady=5)
 
         tk.Button(self, text="Save as PDF", command=self.save_as_pdf).pack(pady=5)
-        tk.Button(self, text="Close", command=self.controller.destroy).pack(pady=5)
+        tk.Button(self, text="Close", command=self.return_to_ticket_selection).pack(pady=5)
 
     def tkraise(self, *args, **kwargs):
         #Update receipt details 
@@ -295,6 +305,10 @@ class ReceiptFrame(tk.Frame):
 
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save PDF: {e}")
+
+    def return_to_ticket_selection(self):
+        self.controller.show_frame("TicketSelectionFrame")
+
 
 #Main loop
 if __name__ == "__main__":
