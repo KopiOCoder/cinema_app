@@ -1,1 +1,6 @@
-# Cinema App 
+# Cinema App
+
+pip install reportlab
+
+
+

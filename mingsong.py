@@ -1,7 +1,12 @@
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import messagebox, ttk, filedialog
 import time
 import datetime
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER
+
 
 
 
@@ -10,6 +15,7 @@ def calculate_fare(num_adults, num_children):
     ADULT_PRICE = 15.00
     CHILD_PRICE = 10.00
     return (num_adults * ADULT_PRICE) + (num_children * CHILD_PRICE)
+
 
 #tkinter setup
 
@@ -155,7 +161,7 @@ class PaymentFrame(tk.Frame):
         #Simulate payment processing
         self.status_label.config(text="Processing payment...")
         self.progress_bar.pack(pady=10)
-        self.progress_bar.start(10)
+        self.progress_bar.start(3)
         
         self.update_idletasks()
         time.sleep(2)
@@ -175,7 +181,8 @@ class ReceiptFrame(tk.Frame):
         self.receipt_label = tk.Label(self, text="", justify=tk.LEFT, font=("Courier", 12))
         self.receipt_label.pack(pady=5)
 
-        tk.Button(self, text="Close", command=self.controller.destroy).pack(pady=20)
+        tk.Button(self, text="Save as PDF", command=self.save_as_pdf).pack(pady=5)
+        tk.Button(self, text="Close", command=self.controller.destroy).pack(pady=5)
 
     def tkraise(self, *args, **kwargs):
         #Update receipt details 
@@ -200,6 +207,49 @@ class ReceiptFrame(tk.Frame):
         )
         self.receipt_label.config(text=receipt_text)
         super().tkraise(*args, **kwargs)
+
+    def save_as_pdf(self):
+        try:
+            #time
+            now = datetime.datetime.now()
+            filename = now.strftime("CinemaReceipt_%Y-%m-%d_%H%M%S")
+
+            #open a file dialog with the autofilled name
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".pdf",
+                filetypes=[("PDF files", "*.pdf")],
+                title="Save Receipt as PDF",
+                initialfile=filename
+            )
+
+            if not file_path: 
+                return
+
+            #create the PDF document
+            doc = SimpleDocTemplate(file_path, pagesize=letter)
+            styles = getSampleStyleSheet()
+            story = []
+
+            #add title to the PDF
+            title_style = ParagraphStyle('TitleStyle', parent=styles['Normal'],
+                                         fontSize=20, alignment=TA_CENTER,
+                                         spaceAfter=12)
+            story.append(Paragraph("Cinema Ticket Receipt", title_style))
+            story.append(Spacer(1, 12))
+
+            #get the receipt text from the label and add it to the PDF
+            receipt_text = self.receipt_label.cget("text")
+            for line in receipt_text.split('\n'):
+                #each line as new paragraph
+                story.append(Paragraph(line, styles['Normal']))
+                story.append(Spacer(1, 6))
+
+            
+            doc.build(story)
+            messagebox.showinfo("Success", f"Receipt saved successfully to:\n{file_path}")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save PDF: {e}")
 
 #Main loop
 if __name__ == "__main__":
