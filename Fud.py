@@ -86,7 +86,6 @@ def update_cart_display():
         remove_button.grid(row=0, column=1, sticky="e", padx=5)
 
         row_count += 1
-    
     # Add a separator and total price label
     if cart_items:
         separator = tk.Frame(cart_frame, height=2, bg=MainFG)
@@ -101,6 +100,16 @@ def update_cart_display():
             fg="#10b981"
         )
         total_label.grid(row=row_count, column=0, sticky="ew", padx=10, pady=5)
+
+        checkout_button = tk.Button(
+            cart_frame, 
+            text="Checkout", 
+            font=('Helvetica', 14, 'bold'), 
+            bg="#10b981", 
+            fg="#ffffff",
+            command=checkout
+        )
+        checkout_button.grid(row=row_count+1, column=0, sticky="ew", padx=10, pady=5)
 
 def remove_from_cart(item_name):
     """
@@ -178,6 +187,58 @@ def create_menu_items(parent_frame, food_data):
                 row += 1
         
         row += 1 # Move to the next row after a full row of items, or to prepare for the next category header
+
+def checkout():
+    """
+    Processes the final order, prints a summary to the terminal,
+    and then clears the cart.
+    """
+    if not cart_items:
+        print("\n--- CHECKOUT ABORTED ---")
+        print("Your cart is empty. Nothing to check out.")
+        print("------------------------\n")
+        return
+
+    # 1. Summarize the items
+    item_counts = {}
+    total_price = 0.0
+    for item in cart_items:
+        item_name = item['name']
+        price = item['price']
+        
+        # Aggregate quantity and calculate total
+        if item_name not in item_counts:
+            item_counts[item_name] = {'quantity': 0, 'price': price}
+        
+        item_counts[item_name]['quantity'] += 1
+        total_price += price
+
+    # 2. Print the formatted receipt
+    print("\n" + "="*40)
+    print(f"{'ORDER RECEIPT':^40}")
+    print("="*40)
+    
+    # Print each unique item
+    for name, data in item_counts.items():
+        qty = data['quantity']
+        price_per_unit = data['price']
+        subtotal = qty * price_per_unit
+        
+        item_line = f"{name} ({qty} x RM{price_per_unit:.2f})"
+        price_line = f"RM{subtotal:.2f}"
+        
+        # Print item name left-aligned and subtotal right-aligned
+        print(f"{item_line:<30}{price_line:>10}")
+        
+    print("-" * 40)
+    print(f"{'TOTAL:':<30}RM{total_price:>7.2f}")
+    print("="*40)
+    print("Thank you for your order! It is now being prepared.")
+    print("="*40 + "\n")
+    
+    # 3. Clear the cart and update the display
+    cart_items.clear()
+    update_cart_display()
 
 # Main application setup
 root = tk.Tk()
