@@ -5,7 +5,7 @@ import sqlite3
 import os
 
 
-db_path = os.path.join("cinema.db")
+db_path = "cinema.db"
 
 def init_db():
     cnct = sqlite3.connect(db_path)
