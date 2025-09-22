@@ -1,27 +1,83 @@
 
 import tkinter as tk
 from tkinter import messagebox
+import sqlite3
+import os
+
+
+db_path = os.path.join("cinema.db")
+
+def init_db():
+    cnct = sqlite3.connect(db_path)
+    cur = cnct.cursor()
+    # Create table if not exists
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS seats (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            row TEXT NOT NULL,
+            number INTEGER NOT NULL,
+            booked INTEGER DEFAULT 0
+        )
+    """)
+    rows_top = ["A", "B", "C", "D"]
+    rows_bottom = ["E", "F", "G"]
+    
+    # Insert seats if not exists
+    for row in rows_top:
+        for num in range(1, 9):
+            cur.execute("SELECT * FROM seats WHERE row=? AND number=?", (row, num))
+            if not cur.fetchone():
+                cur.execute("INSERT INTO seats (row, number, booked) VALUES (?, ?, 0)", (row, num))
+    
+    for row in rows_bottom:
+        for num in range(1, 11):
+            cur.execute("SELECT * FROM seats WHERE row=? AND number=?", (row, num))
+            if not cur.fetchone():
+                cur.execute("INSERT INTO seats (row, number, booked) VALUES (?, ?, 0)", (row, num))
+    
+    cnct.commit()
+    cnct.close()
+
+def get_seat_status():
+    cnct = sqlite3.connect(db_path)
+    cur = cnct.cursor()
+    cur.execute("SELECT row, number, booked FROM seats")
+    seats = {f"{row}{num}": booked for row, num, booked in cur.fetchall()}
+    cnct.close()
+    return seats
+
+def book_seat(seat_name):
+    """seat_name = 'A1', 'B3', etc."""
+    row = seat_name[0]
+    num = int(seat_name[1:])
+    cnct = sqlite3.connect(db_path)
+    cur = cnct.cursor()
+    cur.execute("UPDATE seats SET booked=1 WHERE row=? AND number=?", (row, num))
+    cnct.commit()
+    cnct.close()
 
 #detail of seat
 rows_top = ["A", "B", "C", "D"]    
 rows_bottom = ["E", "F", "G"] 
 
-seat_map = {}
+init_db()
+seat_status = get_seat_status()
 selected_seats = []  
 seat_btn = {} 
+
 #function of choosing seat
-def choose_seat(seat, btn):
-    if seat_map[seat]:  # Already booked
-        messagebox.showwarning("Unavailable", f"Seat {seat} is already booked ❌")
+def choose_seat(seat_id, btn):
+    if seat_status.get(seat_id) == 1:  # Already booked
+        messagebox.showwarning("Unavailable", f"Seat {seat_id} is already booked ❌")
         return
     
-    if seat in selected_seats:  
+    if seat_id in selected_seats:  
         # Deselect
-        selected_seats.remove(seat)
-        btn.config(bg="green")  #as default
+        selected_seats.remove(seat_id)
+        btn.config(bg="green", text=seat_id[1:])  #as default
     else:
         # Select
-        selected_seats.append(seat)
+        selected_seats.append(seat_id)
         btn.config(bg="orange")  # selected
 
 #function of turning page
@@ -59,9 +115,10 @@ def detail_pg():
         if total != len(selected_seats):
             messagebox.showerror("Invalid Input", "The total of adults, children, and elderly must equal selected seats.")
             return
-        for seat in selected_seats:
-            seat_map[seat] = True
-            seat_btn[seat].config(text="❌", bg="gray", width=4, height=2)
+        for seat_id in selected_seats:
+            book_seat(seat_id)
+            seat_status[seat_id] = 1
+            seat_btn[seat_id].config(text="❌", bg="gray", width=4, height=2)
         messagebox.showinfo(
             "Success",
             f"Seats {', '.join(selected_seats)} booked successfully ✅\n"
@@ -73,12 +130,6 @@ def detail_pg():
     tk.Button(dt_wdw, text="Confirm Payment", bg="green", fg="white",
               font=("Arial", 12, "bold"), command=confirm_payment).pack(pady=20)
 
-for row in rows_top:
-    for num in range(1, 9):  
-        seat_map[f"{row}{num}"] = False
-for row in rows_bottom:
-    for num in range(1, 11):  
-        seat_map[f"{row}{num}"] = False
 
 
 
@@ -102,12 +153,16 @@ for r, row in enumerate(rows_top): # as a list
     tk.Label(seat_frame, text=row,font=("Arial", 12, "bold")).grid(row=r, column=0, padx=10)
 
     for c in range(1, 9): # draw the seat 1--8 based on their alphabets
-        seat = f"{row}{c}"
-        btn = tk.Button(seat_frame, text=str(c), width=4, height=2,
-                        bg="green", fg="white", font=("Arial", 10, "bold"))
+        seat_id = f"{row}{c}"
+        booked = seat_status.get(seat_id)
+        btn_text = "❌" if booked else str(c)
+        btn_color = "gray" if booked else "green"
+        btn = tk.Button(seat_frame, text=btn_text, width=4, height=2,
+                        bg=btn_color, fg="white", font=("Arial", 10, "bold"))
+        
         btn.grid(row=r, column=c+1, padx=5, pady=5)  # shift +1 for centering
-        btn.config(command=lambda s=seat, b=btn: choose_seat(s, b))
-        seat_btn[seat] = btn
+        btn.config(command=lambda s=seat_id, b=btn: choose_seat(s, b))
+        seat_btn[seat_id] = btn
     tk.Label(seat_frame, text=row,font=("Arial", 12, "bold")).grid(row=r, column=10, padx=10)
 
 #as the walk way between the top row and bottom row
@@ -119,12 +174,16 @@ for r, row in enumerate(rows_bottom, start=gap_row + 1):
     tk.Label(seat_frame, text=row,font=("Arial", 12, "bold")).grid(row=r, column=0, padx=10)
 
     for c in range(1, 11):
-        seat = f"{row}{c}"
-        btn = tk.Button(seat_frame, text=str(c), width=4, height=2,
-                        bg="green", fg="white", font=("Arial", 10, "bold"))
+        seat_id = f"{row}{c}"
+        booked = seat_status.get(seat_id)
+        btn_text = "❌" if booked else str(c)
+        btn_color = "gray" if booked else "green"
+
+        btn = tk.Button(seat_frame, text=btn_text, width=4, height=2,
+                        bg=btn_color, fg="white", font=("Arial", 10, "bold"))
         btn.grid(row=r, column=c, padx=5, pady=5)
-        btn.config(command=lambda s=seat, b=btn: choose_seat(s, b))
-        seat_btn[seat] = btn
+        btn.config(command=lambda s=seat_id, b=btn: choose_seat(s, b))
+        seat_btn[seat_id] = btn
     tk.Label(seat_frame, text=row,font=("Arial", 12, "bold")).grid(row=r, column=11, padx=10)
 
 tk.Button(root, text="Proceed to Payment", bg="blue", fg="white",
