@@ -6,12 +6,12 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER
+import uuid
 
 
 
-
+#Calculates the total fare based on the number of adults and children
 def calculate_fare(num_adults, num_children):
-    #Calculates the total fare based on the number of adults and children
     ADULT_PRICE = 15.00
     CHILD_PRICE = 10.00
     return (num_adults * ADULT_PRICE) + (num_children * CHILD_PRICE)
@@ -20,7 +20,7 @@ def return_to_ticket_selection(self):
         self.controller.show_frame("TicketSelectionFrame")
 
 
-#tkinter setup
+#tkinter setup (Manages frames, and variables)
 
 class CinemaKiosk(tk.Tk):
     def __init__(self):
@@ -30,9 +30,12 @@ class CinemaKiosk(tk.Tk):
         self.resizable(False, False)
 
         
+        #shared variables
         self.num_adults = 0
         self.num_children = 0
         self.total_price = 0.0
+        self.last_four_card_digits = None
+
 
         #frames arrangement
         self.frames = {}
@@ -41,12 +44,14 @@ class CinemaKiosk(tk.Tk):
             self.frames[F.__name__] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
+        #start with ticket selection frame
         self.show_frame("TicketSelectionFrame")
 
+    #Show a frame for the given page name
     def show_frame(self, page_name):
-        #Show a frame for the given page name
         frame = self.frames[page_name]
         frame.tkraise()
+
 
 #Frame 1: Ticket Selection
 class TicketSelectionFrame(tk.Frame):
@@ -76,6 +81,8 @@ class TicketSelectionFrame(tk.Frame):
         self.status_label.config(text="")
         super().tkraise(*args, **kwargs)
 
+
+    #validation
     def calculate(self):
         try:
             adults = int(self.adult_entry.get())
@@ -172,8 +179,8 @@ class PaymentFrame(tk.Frame):
         super().tkraise(*args, **kwargs)
 
     def start_countdown(self):
-        #resets the timer and starts the countdown
-        self.time_remaining = 10
+        #reset/start the countdown timer
+        self.time_remaining = 180
         self.countdown_label.config(text=f"Time Remaining: {self.time_remaining}", fg="green")
         if self.timer_id:
             self.after_cancel(self.timer_id) 
@@ -185,9 +192,10 @@ class PaymentFrame(tk.Frame):
             self.countdown_label.config(text=f"Time Remaining: {self.time_remaining}")
 
             #change color for a sense of urgency :D
-            if self.time_remaining < 5:
+            if self.time_remaining < 30:
                 self.countdown_label.config(fg="red")
-            
+
+            #let it repeat
             self.timer_id = self.after(1000, self.countdown_timer) 
         else:
             self.cancel_order_timeout()
@@ -202,7 +210,7 @@ class PaymentFrame(tk.Frame):
         expiry = self.expiry_entry.get()
 
         #TESTING....REMEMBER ADJUST BACK TO 16
-        if not card.isdigit() or len(card) != 1:
+        if not card.isdigit() or len(card) != 16:
             self.status_label.config(text="❌ Invalid card number.")
             return
         if not cvv.isdigit() or len(cvv) != 3:
@@ -212,8 +220,33 @@ class PaymentFrame(tk.Frame):
             self.status_label.config(text="❌ Invalid expiry date format.")
             return
         
+        try:
+            exp_month = int(expiry[:2])
+            exp_year = int(expiry[3:]) + 2000 
+
+            if exp_month < 1 or exp_month > 12:
+                self.status_label.config(text="❌ Invalid expiry month.")
+                return
+
+            
+            now = datetime.datetime.now()
+            current_year = now.year
+            current_month = now.month
+
+            #expiry check
+            if exp_year < current_year or (exp_year == current_year and exp_month < current_month):
+                self.status_label.config(text="❌ Card expired.")
+                return
+            
+        except ValueError:
+            self.status_label.config(text="❌ Invalid expiry date.")
+            return
+            
         if self.timer_id:
             self.after_cancel(self.timer_id)
+
+        #Store the last four digits of the card number
+        self.controller.last_four_card_digits = card[-4:]
 
         #Simulate payment processing
         self.status_label.config(text="Processing payment...")
@@ -228,6 +261,8 @@ class PaymentFrame(tk.Frame):
         self.card_entry.delete(0, tk.END)
         self.cvv_entry.delete(0, tk.END)
         self.expiry_entry.delete(0, tk.END)
+
+        self.controller.transaction_id = str(uuid.uuid4())
         
         messagebox.showinfo("Payment Status", "Payment successful! 🎉")
         self.controller.show_frame("ReceiptFrame")
@@ -256,8 +291,11 @@ class ReceiptFrame(tk.Frame):
         adults = self.controller.num_adults
         children = self.controller.num_children
         total = self.controller.total_price
+        last_four = self.controller.last_four_card_digits
+        transaction_id = self.controller.transaction_id
 
         receipt_text = (
+            f"Transaction ID: {transaction_id}\n"
             f"Date: {receipt_date}\n"
             f"Time: {receipt_time}\n"
             f"------------------------------\n"
@@ -265,6 +303,7 @@ class ReceiptFrame(tk.Frame):
             f"Child Tickets: {children} x $10.00\n"
             f"------------------------------\n"
             f"Total Paid: ${total:.2f}\n"
+            f"Paid by Card: ************{last_four}\n"
             f"==============================\n"
             f"Thank you for your visit! 🎟️"
         )
@@ -273,7 +312,7 @@ class ReceiptFrame(tk.Frame):
 
     def save_as_pdf(self):
         try:
-            #time
+            #autofull filename with the time
             now = datetime.datetime.now()
             filename = now.strftime("CinemaReceipt_%Y-%m-%d_%H%M%S")
 
