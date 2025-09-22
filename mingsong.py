@@ -6,6 +6,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER
+import uuid
 
 
 
@@ -238,6 +239,8 @@ class PaymentFrame(tk.Frame):
         self.card_entry.delete(0, tk.END)
         self.cvv_entry.delete(0, tk.END)
         self.expiry_entry.delete(0, tk.END)
+
+        self.controller.transaction_id = str(uuid.uuid4())
         
         messagebox.showinfo("Payment Status", "Payment successful! 🎉")
         self.controller.show_frame("ReceiptFrame")
@@ -267,8 +270,10 @@ class ReceiptFrame(tk.Frame):
         children = self.controller.num_children
         total = self.controller.total_price
         last_four = self.controller.last_four_card_digits
+        transaction_id = self.controller.transaction_id
 
         receipt_text = (
+            f"Transaction ID: {transaction_id}\n"
             f"Date: {receipt_date}\n"
             f"Time: {receipt_time}\n"
             f"------------------------------\n"
