@@ -220,6 +220,28 @@ class PaymentFrame(tk.Frame):
             self.status_label.config(text="❌ Invalid expiry date format.")
             return
         
+        try:
+            exp_month = int(expiry[:2])
+            exp_year = int(expiry[3:]) + 2000 
+
+            if exp_month < 1 or exp_month > 12:
+                self.status_label.config(text="❌ Invalid expiry month.")
+                return
+
+            
+            now = datetime.datetime.now()
+            current_year = now.year
+            current_month = now.month
+
+            #expiry check
+            if exp_year < current_year or (exp_year == current_year and exp_month < current_month):
+                self.status_label.config(text="❌ Card expired.")
+                return
+            
+        except ValueError:
+            self.status_label.config(text="❌ Invalid expiry date.")
+            return
+            
         if self.timer_id:
             self.after_cancel(self.timer_id)
 
