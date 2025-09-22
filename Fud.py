@@ -33,9 +33,9 @@ def update_cart_display():
     Clears the current cart display and rebuilds it based on the cart_items list,
     stacking duplicate items and showing the total price.
     """
-    # Clear all existing widgets in the cart frame, except for the title
+    # Clear all existing widgets in the cart frame, except for the title and permanent buttons
     for widget in cart_frame.winfo_children():
-        if widget is not cart_title_label:
+        if widget is not cart_title_label and widget is not skip_button:
             widget.destroy()
 
     # Create a dictionary to count unique items
@@ -50,7 +50,7 @@ def update_cart_display():
         total_price += item['price']
 
     # Create new labels for each unique item in the cart
-    row_count = 1
+    row_count = 2  # Start from row 2 to accommodate the title and skip button
     for item_name, data in item_counts.items():
         quantity = data['quantity']
         price = data['price']
@@ -306,8 +306,8 @@ def on_mousewheel(event):
         menu_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
 
 menu_canvas.bind_all("<MouseWheel>", on_mousewheel)   # Windows/Mac
-menu_canvas.bind_all("<Button-4>", on_mousewheel)     # Linux scroll up
-menu_canvas.bind_all("<Button-5>", on_mousewheel)     # Linux scroll down
+menu_canvas.bind_all("<Button-4>", on_mousewheel)    # Linux scroll up
+menu_canvas.bind_all("<Button-5>", on_mousewheel)    # Linux scroll down
 
 
 # --- Cart Frame ---
@@ -323,9 +323,23 @@ menu_title_label.grid(row=0, column=0, columnspan=3, pady=10)
 cart_title_label = tk.Label(cart_frame, text="Your Cart", font=('Helvetica', 18, 'bold'), bg="#2d3748", fg=MainFG)
 cart_title_label.grid(row=0, column=0, pady=10, sticky="ew")
 
+# The permanent "Skip & Pay" button
+skip_button = tk.Button(
+    cart_frame,
+    text="Skip & Pay",
+    font=('Helvetica', 14, 'bold'),
+    bg="#6b7280",
+    fg="#ffffff",
+    command=checkout
+)
+skip_button.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 5))
+
 # Open the JSON data and create the menu
 food_data = open_json_db()
 if food_data:
     create_menu_items(scrollable_menu_frame, food_data)
+
+# Call update_cart_display to show the initial state of the cart
+update_cart_display()
     
 root.mainloop()
