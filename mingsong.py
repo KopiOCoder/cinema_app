@@ -9,9 +9,8 @@ from reportlab.lib.enums import TA_CENTER
 
 
 
-
+#Calculates the total fare based on the number of adults and children
 def calculate_fare(num_adults, num_children):
-    #Calculates the total fare based on the number of adults and children
     ADULT_PRICE = 15.00
     CHILD_PRICE = 10.00
     return (num_adults * ADULT_PRICE) + (num_children * CHILD_PRICE)
@@ -20,7 +19,7 @@ def return_to_ticket_selection(self):
         self.controller.show_frame("TicketSelectionFrame")
 
 
-#tkinter setup
+#tkinter setup (Manages frames, and variables)
 
 class CinemaKiosk(tk.Tk):
     def __init__(self):
@@ -30,6 +29,7 @@ class CinemaKiosk(tk.Tk):
         self.resizable(False, False)
 
         
+        #shared variables
         self.num_adults = 0
         self.num_children = 0
         self.total_price = 0.0
@@ -43,12 +43,14 @@ class CinemaKiosk(tk.Tk):
             self.frames[F.__name__] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
+        #start with ticket selection frame
         self.show_frame("TicketSelectionFrame")
 
+    #Show a frame for the given page name
     def show_frame(self, page_name):
-        #Show a frame for the given page name
         frame = self.frames[page_name]
         frame.tkraise()
+
 
 #Frame 1: Ticket Selection
 class TicketSelectionFrame(tk.Frame):
@@ -78,6 +80,8 @@ class TicketSelectionFrame(tk.Frame):
         self.status_label.config(text="")
         super().tkraise(*args, **kwargs)
 
+
+    #validation
     def calculate(self):
         try:
             adults = int(self.adult_entry.get())
@@ -174,7 +178,7 @@ class PaymentFrame(tk.Frame):
         super().tkraise(*args, **kwargs)
 
     def start_countdown(self):
-        #resets the timer and starts the countdown
+        #reset/start the countdown timer
         self.time_remaining = 180
         self.countdown_label.config(text=f"Time Remaining: {self.time_remaining}", fg="green")
         if self.timer_id:
@@ -189,7 +193,8 @@ class PaymentFrame(tk.Frame):
             #change color for a sense of urgency :D
             if self.time_remaining < 30:
                 self.countdown_label.config(fg="red")
-            
+
+            #let it repeat
             self.timer_id = self.after(1000, self.countdown_timer) 
         else:
             self.cancel_order_timeout()
@@ -280,7 +285,7 @@ class ReceiptFrame(tk.Frame):
 
     def save_as_pdf(self):
         try:
-            #time
+            #autofull filename with the time
             now = datetime.datetime.now()
             filename = now.strftime("CinemaReceipt_%Y-%m-%d_%H%M%S")
 
