@@ -248,6 +248,31 @@ class PaymentFrame(tk.Frame):
         #Store the last four digits of the card number
         self.controller.last_four_card_digits = card[-4:]
 
+        #pop up the approval window
+        self.show_approval_window()
+
+    def show_approval_window(self):
+        
+        self.approval_window = tk.Toplevel(self.controller)
+        self.approval_window.title("Authorization")
+        self.approval_window.geometry("300x120")
+        self.approval_window.transient(self.controller)
+        self.approval_window.grab_set()
+
+        tk.Label(self.approval_window, text="An authorization request has been sent to your phone.", font=("Arial", 10)).pack(pady=10)
+
+     
+        btn_frame = tk.Frame(self.approval_window)
+        btn_frame.pack(pady=10)
+        tk.Button(btn_frame, text="I've Authorized/Rejected Transaction", command=self.authorize_payment, bg="green", fg="white").pack(side=tk.LEFT, padx=5)
+
+    def authorize_payment(self):
+        self.approval_window.destroy()
+        self.status_label.config(text="Processing payment...")
+        self.progress_bar.pack(pady=10)
+        self.progress_bar.start(3)
+        self.after(3000, self.process_payment_completed)
+
         #Simulate payment processing
         self.status_label.config(text="Processing payment...")
         self.progress_bar.pack(pady=10)
@@ -269,7 +294,7 @@ class PaymentFrame(tk.Frame):
 
 #Frame 4: Receipt
 class ReceiptFrame(tk.Frame):
-    def __init__(self, parent, controller):
+    def __init__(self, parent, controller): 
         super().__init__(parent)
         self.controller = controller
 
