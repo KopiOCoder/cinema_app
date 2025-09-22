@@ -1,12 +1,6 @@
-<<<<<<< HEAD
-import tkinter as tk
-from tkinter import messagebox
-=======
-
 import tkinter as tk
 from tkinter import messagebox
 import sqlite3
-import os
 
 
 db_path = "cinema.db"
@@ -59,25 +53,10 @@ def book_seat(seat_name):
     cur.execute("UPDATE seats SET booked=1 WHERE row=? AND number=?", (row, num))
     cnct.commit()
     cnct.close()
->>>>>>> kit
-
 #detail of seat
 rows_top = ["A", "B", "C", "D"]    
 rows_bottom = ["E", "F", "G"] 
 
-<<<<<<< HEAD
-seat_map = {}
-selected_seats = []  
-seat_btn = {} 
-
-# Fill seat map
-for row in rows_top:
-    for num in range(1, 9):  # 1–8 seats
-        seat_map[f"{row}{num}"] = False
-for row in rows_bottom:
-    for num in range(1, 11):  # 1–10 seats
-        seat_map[f"{row}{num}"] = False
-=======
 init_db()
 seat_status = get_seat_status()
 selected_seats = []  
@@ -148,43 +127,15 @@ def detail_pg():
     tk.Button(dt_wdw, text="Confirm Payment", bg="green", fg="white",
               font=("Arial", 12, "bold"), command=confirm_payment).pack(pady=20)
 
-
-
->>>>>>> kit
-
 root = tk.Tk()
 root.title("Cinema Seat Booking")
 root.geometry("1000x650")
 
-<<<<<<< HEAD
-=======
 #header
->>>>>>> kit
 header_pg = tk.Label(root, text="🎬 Cinema Seat Booking System",
                  font=("Arial", 18, "bold"), fg="white", bg="grey")
 header_pg.pack(pady=10)
 
-<<<<<<< HEAD
-seat_frame = tk.Frame(root)
-seat_frame.pack()
-
-for r, row in enumerate(rows_top):
-    tk.Label(seat_frame, text=row,font=("Arial", 12, "bold")).grid(row=r, column=0, padx=10)
-
-    for c in range(1, 9):
-        seat = f"{row}{c}"
-        btn = tk.Button(seat_frame, text=str(c), width=4, height=2,
-                        bg="green", fg="white", font=("Arial", 10, "bold"))
-        btn.grid(row=r, column=c+1, padx=5, pady=5)  # shift +1 for centering
-
-    tk.Label(seat_frame, text=row,font=("Arial", 12, "bold")).grid(row=r, column=10, padx=10)
-
-# --- Gap Row ---
-gap_row = len(rows_top)
-tk.Label(seat_frame).grid(row=gap_row, column=0, pady=20)
-
-# --- Bottom rows (1–10) ---
-=======
 #the screen in front
 screen = tk.Label (root, text="[----------------------------------------------------]",font="black", width=30, height=2)
 screen.pack(pady=10)
@@ -212,24 +163,10 @@ for r, row in enumerate(rows_top): # as a list
 gap_row = len(rows_top)
 tk.Label(seat_frame).grid(row=gap_row, column=0, pady=20)
 
-
->>>>>>> kit
 for r, row in enumerate(rows_bottom, start=gap_row + 1):
     tk.Label(seat_frame, text=row,font=("Arial", 12, "bold")).grid(row=r, column=0, padx=10)
 
     for c in range(1, 11):
-<<<<<<< HEAD
-        seat = f"{row}{c}"
-        btn = tk.Button(seat_frame, text=str(c), width=4, height=2,
-                        bg="green", fg="white", font=("Arial", 10, "bold"))
-        btn.grid(row=r, column=c, padx=5, pady=5)
-
-
-    tk.Label(seat_frame, text=row,font=("Arial", 12, "bold")).grid(row=r, column=11, padx=10)
-
-
-root.mainloop()
-=======
         seat_id = f"{row}{c}"
         booked = seat_status.get(seat_id)
         btn_text = "❌" if booked else str(c)
@@ -247,4 +184,3 @@ tk.Button(root, text="Proceed to Payment", bg="blue", fg="white",
 
 root.mainloop()
 
->>>>>>> kit
