@@ -33,6 +33,8 @@ class CinemaKiosk(tk.Tk):
         self.num_adults = 0
         self.num_children = 0
         self.total_price = 0.0
+        self.last_four_card_digits = None
+
 
         #frames arrangement
         self.frames = {}
@@ -173,7 +175,7 @@ class PaymentFrame(tk.Frame):
 
     def start_countdown(self):
         #resets the timer and starts the countdown
-        self.time_remaining = 10
+        self.time_remaining = 180
         self.countdown_label.config(text=f"Time Remaining: {self.time_remaining}", fg="green")
         if self.timer_id:
             self.after_cancel(self.timer_id) 
@@ -185,7 +187,7 @@ class PaymentFrame(tk.Frame):
             self.countdown_label.config(text=f"Time Remaining: {self.time_remaining}")
 
             #change color for a sense of urgency :D
-            if self.time_remaining < 5:
+            if self.time_remaining < 30:
                 self.countdown_label.config(fg="red")
             
             self.timer_id = self.after(1000, self.countdown_timer) 
@@ -202,7 +204,7 @@ class PaymentFrame(tk.Frame):
         expiry = self.expiry_entry.get()
 
         #TESTING....REMEMBER ADJUST BACK TO 16
-        if not card.isdigit() or len(card) != 1:
+        if not card.isdigit() or len(card) != 16:
             self.status_label.config(text="❌ Invalid card number.")
             return
         if not cvv.isdigit() or len(cvv) != 3:
@@ -214,6 +216,9 @@ class PaymentFrame(tk.Frame):
         
         if self.timer_id:
             self.after_cancel(self.timer_id)
+
+        #Store the last four digits of the card number
+        self.controller.last_four_card_digits = card[-4:]
 
         #Simulate payment processing
         self.status_label.config(text="Processing payment...")
@@ -256,6 +261,7 @@ class ReceiptFrame(tk.Frame):
         adults = self.controller.num_adults
         children = self.controller.num_children
         total = self.controller.total_price
+        last_four = self.controller.last_four_card_digits
 
         receipt_text = (
             f"Date: {receipt_date}\n"
@@ -265,6 +271,7 @@ class ReceiptFrame(tk.Frame):
             f"Child Tickets: {children} x $10.00\n"
             f"------------------------------\n"
             f"Total Paid: ${total:.2f}\n"
+            f"Paid by Card: ************{last_four}\n"
             f"==============================\n"
             f"Thank you for your visit! 🎟️"
         )
