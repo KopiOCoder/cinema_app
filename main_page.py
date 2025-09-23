@@ -2,7 +2,7 @@ import customtkinter as ctk
 from tkinter import messagebox
 import os
 from PIL import Image, ImageTk
-
+from seat import show_seat_page
 
 # --- Movie Data ---
 movies = [
@@ -40,13 +40,10 @@ def prev_movie():
 	show_movie(current_index)
 
 def select_movie():
-	selected = movies[current_index]
-	messagebox.showinfo("Selected", f"You selected: {selected['title']}")
-	import subprocess
-	import sys
-	subprocess.call(["python", "seat.py", selected['title']])
-	 # Close the main page after selection
-	# Here, you can call seat booking logic and pass selected movie info
+    selected = movies[current_index]
+    carousel_frame.pack_forget()
+    btn_frame.pack_forget()
+    show_seat_page(root, selected['title'])
 
 
 def auto_rotate():
