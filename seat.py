@@ -6,7 +6,7 @@ movie_title = sys.argv[1] if len(sys.argv) > 1 else "[No Movie Selected]"
 import subprocess
 
 
-db_path = "cinema.db"
+db_path = f"{movie_title.replace(' ', '_')}.db"
 
 def init_db():
     cnct = sqlite3.connect(db_path)
@@ -85,7 +85,9 @@ def detail_pg():
     if not selected_seats:
         messagebox.showwarning("No Selection", "Please select at least one seat")
         return
-    subprocess.Popen(["python", "mingsong.py"])
+    seats_str = ",".join(selected_seats)
+    seat_count = len(selected_seats)
+    subprocess.Popen(["python", "mingsong.py", movie_title, str(seat_count), seats_str])
 
     dt_wdw = tk.Toplevel(root)
     dt_wdw.title("Payment")
