@@ -8,20 +8,27 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER
 import uuid
 import sys
+import sqlite3
+
 movie_title = sys.argv[1] if len(sys.argv) > 1 else "[No Movie Selected]"
 seat_count = int(sys.argv[2]) if len(sys.argv) > 2 else 0
 selected_seats = [s for s in sys.argv[3].split(",") if s] if len(sys.argv) > 3 else []
-import sqlite3
 db_path = f"{movie_title.replace(' ', '_')}.db"
 
 def book_seat(seat_name):
-    row = seat_name[0]
-    num = int(seat_name[1:])
-    cnct = sqlite3.connect(db_path)
-    cur = cnct.cursor()
-    cur.execute("UPDATE seats SET booked=1 WHERE row=? AND number=?", (row, num))
-    cnct.commit()
-    cnct.close()
+    try:
+
+        row = seat_name[0]
+        num = int(seat_name[1:])
+        cnct = sqlite3.connect(db_path)
+        cur = cnct.cursor()
+        cur.execute("UPDATE seats SET booked=1 WHERE row=? AND number=?", (row, num))
+        cnct.commit()
+        cnct.close()
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+    except IndexError:
+        print(f"Invalid seat format: {seat_name}")
 
 #Calculates the total fare based on the number of adults and children
 def calculate_fare(num_adults, num_children):
@@ -39,7 +46,7 @@ class CinemaKiosk(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Cinema Kiosk")
-        self.geometry("400x400")
+        self.geometry("1000x1000")
         self.resizable(False, False)
 
         
@@ -48,8 +55,11 @@ class CinemaKiosk(tk.Tk):
         self.num_children = 0
         self.total_price = 0.0
         self.last_four_card_digits = None
+        self.transaction_id = None
+        self.selected_seats_count = len(selected_seats)
 
 
+    
         #frames arrangement
         self.frames = {}
         for F in (TicketSelectionFrame, SummaryFrame, PaymentFrame, ReceiptFrame):
@@ -75,6 +85,9 @@ class TicketSelectionFrame(tk.Frame):
         title = tk.Label(self, text="🎬 Buy Your Tickets", font=("Arial", 16, "bold"))
         title.pack(pady=10)
 
+        tk.Label(self, text=f"Movie: {movie_title}").pack(pady=5)
+        tk.Label(self, text=f"Total Seats Selected: {self.controller.selected_seats_count}").pack(pady=5)
+
         tk.Label(self, text="Adult Tickets:").pack(pady=5)
         self.adult_entry = tk.Entry(self)
         self.adult_entry.pack()
@@ -87,13 +100,16 @@ class TicketSelectionFrame(tk.Frame):
         self.status_label = tk.Label(self, text="", fg="red")
         self.status_label.pack()
 
+        #Terms and Conditions
+        tnc_text = "Terms & Conditions:\nBy purchasing this ticket, you agree that tickets are non-refundable and non-exchangeable. Please arrive on time as late entry may not be permitted. Lost or damaged tickets cannot be replaced. Showtimes and prices may change without notice. Management reserves the right to refuse admission. Please purchase tickets honestly — misuse of age, student, or concession tickets may result in denied entry."
+        tk.Label(self, text=tnc_text, font=("Arial", 8), justify=tk.LEFT, wraplength=550).pack(pady=10)
+
     def tkraise(self, *args, **kwargs):
-        # Clears the entry fields and status label when this frame is shown
+        #Clears the entry fields and status label when this frame is shown
         self.adult_entry.delete(0, tk.END)
         self.child_entry.delete(0, tk.END)
         self.status_label.config(text="")
         super().tkraise(*args, **kwargs)
-
 
     #validation
     def calculate(self):
@@ -105,8 +121,14 @@ class TicketSelectionFrame(tk.Frame):
                 self.status_label.config(text="Number of tickets cannot be negative.")
                 return
             
-            if adults == 0 and children == 0:
+            total_tickets = adults + children
+            if total_tickets == 0:
                 self.status_label.config(text="Please select at least one ticket.")
+                return
+            
+            #improved TICKET VALIDATION  
+            if total_tickets != self.controller.selected_seats_count:
+                self.status_label.config(text=f"The total number of tickets ({total_tickets}) must match the number of seats selected ({self.controller.selected_seats_count}).")
                 return
 
             self.controller.num_adults = adults
@@ -281,17 +303,13 @@ class PaymentFrame(tk.Frame):
 
     def authorize_payment(self):
         self.approval_window.destroy()
-        self.status_label.config(text="Processing payment...")
-        self.progress_bar.pack(pady=10)
-        self.progress_bar.start(3)
-        self.after(3000, self.process_payment_completed)
 
         #Simulate payment processing
         self.status_label.config(text="Processing payment...")
         self.progress_bar.pack(pady=10)
         self.progress_bar.start(3)
         
-        self.after(1000, self.process_payment_completed)
+        self.after(3000, self.process_payment_completed)
 
     def process_payment_completed(self):
         for seat in selected_seats:
@@ -341,11 +359,19 @@ class ReceiptFrame(tk.Frame):
             f"------------------------------\n"
             f"Adult Tickets: {adults} x $15.00\n"
             f"Child Tickets: {children} x $10.00\n"
+            f"Seats: {', '.join(selected_seats)}\n"
             f"------------------------------\n"
             f"Total Paid: ${total:.2f}\n"
             f"Paid by Card: ************{last_four}\n"
             f"==============================\n"
-            f"Thank you for your visit! 🎟️"
+            f"Thank you for your visit! 🎟️\n"
+             f"Terms & Conditions:\n"
+            f"By purchasing this ticket, you agree that tickets are non-refundable and non-exchangeable.\n"
+            f"Please arrive on time as late entry may not be permitted.\n"
+            f"Lost or damaged tickets cannot be replaced.\n"
+            f"Showtimes and prices may change without notice.\n"
+            f"Management reserves the right to refuse admission.\n"
+            f"Please purchase tickets honestly — misuse of age, student, or concession tickets may result in denied entry."
         )
         self.receipt_label.config(text=receipt_text)
         super().tkraise(*args, **kwargs)

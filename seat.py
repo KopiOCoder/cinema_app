@@ -89,6 +89,7 @@ def detail_pg():
     seat_count = len(selected_seats)
     subprocess.Popen(["python", "mingsong.py", movie_title, str(seat_count), seats_str])
 
+    """"
     dt_wdw = tk.Toplevel(root)
     dt_wdw.title("Payment")
     dt_wdw.geometry("350x400")
@@ -132,7 +133,7 @@ def detail_pg():
     
     tk.Button(dt_wdw, text="Confirm Payment", bg="green", fg="white",
               font=("Arial", 12, "bold"), command=confirm_payment).pack(pady=20)
-
+    """
 root = tk.Tk()
 root.title("Cinema Seat Booking")
 root.geometry("1000x700")
