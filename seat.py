@@ -75,8 +75,14 @@ def show_seat_page(parent, movie_title):
 
     # Create seat buttons
     for r, row in enumerate(rows_top + rows_bottom):
-        for c in range(1, 11):
-            seat_name = f"{row}{c}"
+        grid_col = 0
+        for num in range(1, 11):
+            if num in (3, 9):          # put a visual gap before seat 3 and before seat 9
+                gap = ctk.CTkLabel(grid_frame, text="   ", width=20)
+                gap.grid(row=r, column=grid_col, padx=4)
+                grid_col += 1
+
+            seat_name = f"{row}{num}"
             btn = ctk.CTkButton(
                 grid_frame,
                 text=seat_name,
@@ -85,8 +91,9 @@ def show_seat_page(parent, movie_title):
                 fg_color="#888" if seat_status.get(seat_name, 0) else "#222",
                 command=lambda sn=seat_name: choose_seat(sn)
             )
-            btn.grid(row=r, column=c, padx=2, pady=2)
+            btn.grid(row=r, column=grid_col, padx=4, pady=4)
             seat_btns[seat_name] = btn
+            grid_col += 1
 
     def proceed_payment():
         if not selected_seats:
@@ -103,5 +110,16 @@ def show_seat_page(parent, movie_title):
 
     pay_btn = ctk.CTkButton(seat_frame, text="Proceed to Payment", command=proceed_payment)
     pay_btn.pack(pady=20)
+
+    def go_back():
+        seat_frame.pack_forget()
+        existing_main = getattr(parent, "_main_frame", None)
+        if existing_main is not None:
+            existing_main.pack(fill="both", expand=True)
+        else:
+            seat_frame.destroy()
+
+    back_btn = ctk.CTkButton(seat_frame, text="Back", command=go_back)
+    back_btn.pack(pady=4)
 
     return seat_frame
