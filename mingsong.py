@@ -7,8 +7,21 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER
 import uuid
+import sys
+movie_title = sys.argv[1] if len(sys.argv) > 1 else "[No Movie Selected]"
+seat_count = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+selected_seats = [s for s in sys.argv[3].split(",") if s] if len(sys.argv) > 3 else []
+import sqlite3
+db_path = f"{movie_title.replace(' ', '_')}.db"
 
-
+def book_seat(seat_name):
+    row = seat_name[0]
+    num = int(seat_name[1:])
+    cnct = sqlite3.connect(db_path)
+    cur = cnct.cursor()
+    cur.execute("UPDATE seats SET booked=1 WHERE row=? AND number=?", (row, num))
+    cnct.commit()
+    cnct.close()
 
 #Calculates the total fare based on the number of adults and children
 def calculate_fare(num_adults, num_children):
@@ -281,6 +294,8 @@ class PaymentFrame(tk.Frame):
         self.after(1000, self.process_payment_completed)
 
     def process_payment_completed(self):
+        for seat in selected_seats:
+            book_seat(seat)
         self.progress_bar.stop()
 
         self.card_entry.delete(0, tk.END)
