@@ -268,17 +268,13 @@ class PaymentFrame(tk.Frame):
 
     def authorize_payment(self):
         self.approval_window.destroy()
-        self.status_label.config(text="Processing payment...")
-        self.progress_bar.pack(pady=10)
-        self.progress_bar.start(3)
-        self.after(3000, self.process_payment_completed)
 
         #Simulate payment processing
         self.status_label.config(text="Processing payment...")
         self.progress_bar.pack(pady=10)
         self.progress_bar.start(3)
         
-        self.after(1000, self.process_payment_completed)
+        self.after(3000, self.process_payment_completed)
 
     def process_payment_completed(self):
         self.progress_bar.stop()
