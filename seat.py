@@ -87,53 +87,8 @@ def detail_pg():
         return
     seats_str = ",".join(selected_seats)
     seat_count = len(selected_seats)
-    subprocess.Popen(["python", "mingsong.py", movie_title, str(seat_count), seats_str])
-
-    """"
-    dt_wdw = tk.Toplevel(root)
-    dt_wdw.title("Payment")
-    dt_wdw.geometry("350x400")
-    
-    tk.Label(dt_wdw, text="Detail    :", font=("Arial", 12, "bold")).pack(pady=10)
-    tk.Label(dt_wdw, text=f"Selected Seats: {', '.join(selected_seats)}",
-             font=("Arial", 12)).pack(pady=10)
-    
-    # Adult, child, and elderly count selectors
-    tk.Label(dt_wdw, text="Num of Adults:", font=("Arial", 12)).pack(pady=5)
-    adult_count = tk.IntVar(value=len(selected_seats))  # default all adults
-    tk.Spinbox(dt_wdw, from_=0, to=len(selected_seats), textvariable=adult_count, width=5).pack()
-
-    tk.Label(dt_wdw, text="Num of Child:", font=("Arial", 12)).pack(pady=5)
-    child_count = tk.IntVar(value=0)  # default 0 children
-    tk.Spinbox(dt_wdw, from_=0, to=len(selected_seats), textvariable=child_count, width=5).pack()
-
-    tk.Label(dt_wdw, text="Num of Old folks:", font=("Arial", 12)).pack(pady=5)
-    oldfolk_count = tk.IntVar(value=0)  # default 0 elderly
-    tk.Spinbox(dt_wdw, from_=0, to=len(selected_seats), textvariable=oldfolk_count, width=5).pack()
-    
-    def confirm_payment():
-        adults = adult_count.get()
-        child = child_count.get()
-        oldfolk = oldfolk_count.get()
-        total = adults + child + oldfolk # to make sure that the default not more than the limit num
-        if total != len(selected_seats):
-            messagebox.showerror("Invalid Input", "The total of adults, children, and elderly must equal selected seats.")
-            return
-        for seat_id in selected_seats:
-            book_seat(seat_id)
-            seat_status[seat_id] = 1
-            seat_btn[seat_id].config(text="❌", bg="gray", width=4, height=2)
-        messagebox.showinfo(
-            "Success",
-            f"Seats {', '.join(selected_seats)} booked successfully ✅\n"
-            f"Adults: {adults}, Children: {child}, Olf folk: {oldfolk}"
-        )
-        selected_seats.clear()
-        dt_wdw.destroy()
-    
-    tk.Button(dt_wdw, text="Confirm Payment", bg="green", fg="white",
-              font=("Arial", 12, "bold"), command=confirm_payment).pack(pady=20)
-    """
+    subprocess.call(["python", "mingsong.py", movie_title, str(seat_count), seats_str])
+    sys.exit()  
 root = tk.Tk()
 root.title("Cinema Seat Booking")
 root.geometry("1000x700")

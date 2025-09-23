@@ -43,7 +43,9 @@ def select_movie():
 	selected = movies[current_index]
 	messagebox.showinfo("Selected", f"You selected: {selected['title']}")
 	import subprocess
-	subprocess.Popen(["python", "seat.py", selected['title']])
+	import sys
+	subprocess.call(["python", "seat.py", selected['title']])
+	 # Close the main page after selection
 	# Here, you can call seat booking logic and pass selected movie info
 
 

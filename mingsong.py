@@ -421,6 +421,7 @@ class ReceiptFrame(tk.Frame):
 
     def return_to_ticket_selection(self):
         self.controller.show_frame("TicketSelectionFrame")
+        sys.exit()
 
 
 #Main loop
