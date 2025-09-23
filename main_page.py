@@ -2,9 +2,7 @@ import customtkinter as ctk
 from tkinter import messagebox
 import os
 from PIL import Image, ImageTk
-import Fud
-import mingsong
-import seat
+
 
 # --- Movie Data ---
 movies = [
@@ -44,6 +42,8 @@ def prev_movie():
 def select_movie():
 	selected = movies[current_index]
 	messagebox.showinfo("Selected", f"You selected: {selected['title']}")
+	import subprocess
+	subprocess.Popen(["python", "seat.py", selected['title']])
 	# Here, you can call seat booking logic and pass selected movie info
 
 
