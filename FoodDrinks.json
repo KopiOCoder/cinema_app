@@ -1,0 +1,74 @@
+[
+{
+"name": "Popcorn (Small)",
+"description": "Sweet, buttery popcorn.",
+"price": 10.50,
+"category": "Popcorn"
+},
+{
+"name": "Popcorn (Medium)",
+"description": "Sweet, buttery popcorn.",
+"price": 15.50,
+"category": "Popcorn"
+},
+{
+"name": "Popcorn (Large)",
+"description": "Sweet, buttery popcorn.",
+"price": 17.50,
+"category": "Popcorn"
+},
+{
+"name": "Nacho",
+"description": "Crispy nacho with cheese.",
+"price": 8.00,
+"category": "Foods"
+},
+{
+"name": "Hotdog",
+"description": "Chicken hotdog with mustard and relish.",
+"price": 12.00,
+"category": "Foods"
+},
+{
+"name": "Chicken Nuggets",
+"description": "Chicken nuggets with a sauce of your choice",
+"price": 16.00,
+"category": "Foods"
+},
+{
+"name": "Ice Lemon Tea",
+"description": "Refreshing and perfect for a hot day.",
+"price": 5.50,
+"category": "Drinks"
+},
+{
+"name": "Pepsi",
+"description": "Cold, bubbly Pepsi.",
+"price": 5.00,
+"category": "Drinks"
+},
+{
+"name": "Coffee",
+"description": "Hot, black coffee.",
+"price": 7.00,
+"category": "Drinks"
+},
+{
+"name": "Combo Set 1",
+"description": "Popcorn (Large) x1 \n Pepsi x1 \n Nacho x1",
+"price": 28.00,
+"category": "Combo"
+},
+{
+"name": "Combo Set 2",
+"description": "Popcorn (Small)x2 \n Pepsi x1 \n Coffee x1",
+"price": 30.00,
+"category": "Combo"
+},
+{
+"name": "Combo Set 3",
+"description": "Hotdog x1 \n Nacho x1 \n Coffee x1",
+"price": 25.00,
+"category": "Combo"
+}
+]
