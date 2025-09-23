@@ -26,7 +26,7 @@ class CinemaKiosk(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Cinema Kiosk")
-        self.geometry("400x400")
+        self.geometry("1000x650") 
         self.resizable(False, False)
 
         
@@ -35,24 +35,26 @@ class CinemaKiosk(tk.Tk):
         self.num_children = 0
         self.total_price = 0.0
         self.last_four_card_digits = None
+        self.transaction_id = None
+        self.frames = {}
 
 
         #frames arrangement
         self.frames = {}
-        for F in (TicketSelectionFrame, SummaryFrame, PaymentFrame, ReceiptFrame):
+        for F in (SeatSelectionFrame, SummaryFrame, PaymentFrame, ReceiptFrame):
             frame = F(self, self)
             self.frames[F.__name__] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
         #start with ticket selection frame
-        self.show_frame("TicketSelectionFrame")
+        self.show_frame("SeatSelectionFrame")
 
     #Show a frame for the given page name
     def show_frame(self, page_name):
         frame = self.frames[page_name]
         frame.tkraise()
 
-
+"""
 #Frame 1: Ticket Selection
 class TicketSelectionFrame(tk.Frame):
     def __init__(self, parent, controller):
@@ -103,11 +105,115 @@ class TicketSelectionFrame(tk.Frame):
 
         except ValueError:
             self.status_label.config(text="Invalid input. Please enter a number.")
+"""
+
+#detail of seat
+rows_top = ["A", "B", "C", "D"]
+rows_bottom = ["E", "F", "G"]
+
+class SeatSelectionFrame(tk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        self.controller = controller
+
+        # Data for seat booking
+        self.seat_map = {}
+        self.selected_seats = []
+        self.seat_buttons = {}
+
+        # Fill seat map initially
+        for row in rows_top:
+            for num in range(1, 9):
+                self.seat_map[f"{row}{num}"] = False
+        for row in rows_bottom:
+            for num in range(1, 11):
+                self.seat_map[f"{row}{num}"] = False
+
+        # UI elements
+        title = tk.Label(self, text="🎬 Select Your Seats", font=("Arial", 16, "bold"))
+        title.pack(pady=10)
+
+        screen_label = tk.Label(self, text="SCREEN", bg="black", fg="white", font=("Arial", 12))
+        screen_label.pack(fill="x", padx=20, pady=10)
+
+        seat_frame = tk.Frame(self)
+        seat_frame.pack()
+
+        # Top rows (A-D)
+        for r, row in enumerate(rows_top):
+            tk.Label(seat_frame, text=row, font=("Arial", 12, "bold")).grid(row=r, column=0, padx=10)
+            for c in range(1, 9):
+                seat = f"{row}{c}"
+                btn = tk.Button(seat_frame, text=str(c), width=4, height=2,
+                                bg="green", fg="white", font=("Arial", 10, "bold"),
+                                command=lambda s=seat: self.toggle_seat(s))
+                btn.grid(row=r, column=c, padx=5, pady=5)
+                self.seat_buttons[seat] = btn
+            tk.Label(seat_frame, text=row, font=("Arial", 12, "bold")).grid(row=r, column=10, padx=10)
+
+        # Gap row
+        gap_row = len(rows_top)
+        tk.Label(seat_frame).grid(row=gap_row, column=0, pady=10)
+
+        # Bottom rows (E-G)
+        for r, row in enumerate(rows_bottom, start=gap_row + 1):
+            tk.Label(seat_frame, text=row, font=("Arial", 12, "bold")).grid(row=r, column=0, padx=10)
+            for c in range(1, 11):
+                seat = f"{row}{c}"
+                btn = tk.Button(seat_frame, text=str(c), width=4, height=2,
+                                bg="green", fg="white", font=("Arial", 10, "bold"),
+                                command=lambda s=seat: self.toggle_seat(s))
+                btn.grid(row=r, column=c, padx=5, pady=5)
+                self.seat_buttons[seat] = btn
+            tk.Label(seat_frame, text=row, font=("Arial", 12, "bold")).grid(row=r, column=11, padx=10)
+
+        self.status_label = tk.Label(self, text="", fg="red")
+        self.status_label.pack(pady=5)
+        self.selected_label = tk.Label(self, text="Selected Seats: 0", font=("Arial", 10))
+        self.selected_label.pack()
+
+        tk.Button(self, text="Proceed to Summary", command=self.proceed_to_summary).pack(pady=10)
+
+    def toggle_seat(self, seat_id):
+        if seat_id in self.selected_seats:
+            self.selected_seats.remove(seat_id)
+            self.seat_buttons[seat_id].config(bg="green", relief=tk.RAISED)
+        elif self.seat_map[seat_id] == False:
+            self.selected_seats.append(seat_id)
+            self.seat_buttons[seat_id].config(bg="blue", relief=tk.SUNKEN)
+        else:
+            messagebox.showinfo("Seat Booked", "Sorry, this seat is already booked.")
+        self.update_labels()
+
+    def update_labels(self):
+        self.selected_label.config(text=f"Selected Seats: {', '.join(self.selected_seats)}")
+    
+    def proceed_to_summary(self):
+        num_seats = len(self.selected_seats)
+        if num_seats == 0:
+            self.status_label.config(text="Please select at least one seat.")
+            return
+
+        # Simple logic: all selected tickets are adult tickets
+        self.controller.num_adults = num_seats
+        self.controller.num_children = 0
+        self.controller.total_price = calculate_fare(num_seats, 0)
+        self.controller.show_frame("SummaryFrame")
+
+    def tkraise(self, *args, **kwargs):
+        # Reset frame when shown
+        self.selected_seats.clear()
+        self.update_labels()
+        for seat, btn in self.seat_buttons.items():
+            if not self.seat_map[seat]:
+                btn.config(bg="green", relief=tk.RAISED)
+        super().tkraise(*args, **kwargs)
 
 #Frame 2: Order Summary
 class SummaryFrame(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
+        self.selected_seats = []
         self.controller = controller
 
         title = tk.Label(self, text="🎬 Order Summary", font=("Arial", 16, "bold"))
@@ -115,6 +221,9 @@ class SummaryFrame(tk.Frame):
 
         self.summary_label = tk.Label(self, text="", font=("Arial", 12))
         self.summary_label.pack(pady=5)
+
+        self.seats_label = tk.Label(self, text="", font=("Arial", 12))
+        self.seats_label.pack(pady=5)
 
         tk.Button(self, text="Proceed to Payment", command=lambda: controller.show_frame("PaymentFrame")).pack(pady=10)
         tk.Button(self, text="Cancel Order", command=self.cancel_order).pack(pady=5)
@@ -124,8 +233,11 @@ class SummaryFrame(tk.Frame):
         adults = self.controller.num_adults
         children = self.controller.num_children
         total = self.controller.total_price
+        selected_seats_str = ", ".join(self.controller.selected_seats)
+
         summary_text = f"Adult Tickets: {adults} x $15.00\nChild Tickets: {children} x $10.00\n\nTotal: ${total:.2f}"
         self.summary_label.config(text=summary_text)
+        self.seats_label.config(text=f"Seats: {selected_seats_str}")
         super().tkraise(*args, **kwargs)
 
     def cancel_order(self):
