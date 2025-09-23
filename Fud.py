@@ -1,6 +1,15 @@
 import tkinter as tk
 from tkinter import font
 import json
+from tkinter import messagebox, ttk
+import datetime
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER
+from tkinter import filedialog
+import uuid
+
 
 #Main Vars
 MainBG = "#111827"
@@ -35,7 +44,7 @@ def update_cart_display():
     """
     # Clear all existing widgets in the cart frame, except for the title and permanent buttons
     for widget in cart_frame.winfo_children():
-        if widget is not cart_title_label and widget is not skip_button:
+        if widget is not cart_title_label and widget is not pay_button:
             widget.destroy()
 
     # Create a dictionary to count unique items
@@ -63,7 +72,7 @@ def update_cart_display():
 
         cart_item_label = tk.Label(
             cart_item_frame, 
-            text=f"{item_name} x{quantity} - RM{subtotal:.2f}",
+            text=f"{item_name} x{quantity} - ${subtotal:.2f}",
             font=('Helvetica', 12), 
             bg="#2d3748", 
             fg=MainFG,
@@ -94,7 +103,7 @@ def update_cart_display():
         
         total_label = tk.Label(
             cart_frame, 
-            text=f"Total: RM{total_price:.2f}", 
+            text=f"Total: ${total_price:.2f}", 
             font=('Helvetica', 14, 'bold'), 
             bg="#2d3748", 
             fg="#10b981"
@@ -174,7 +183,7 @@ def create_menu_items(parent_frame, food_data):
             desc_label = tk.Label(item_card, text=item['description'], font=('Helvetica', 10), wraplength=200, bg=CardBG, fg=MainFG)
             desc_label.grid(row=1, column=0, padx=10)
             
-            price_label = tk.Label(item_card, text=f"RM{item['price']:.2f}", font=('Helvetica', 12, 'bold'), bg=CardBG, fg=MainFG)
+            price_label = tk.Label(item_card, text=f"${item['price']:.2f}", font=('Helvetica', 12, 'bold'), bg=CardBG, fg=MainFG)
             price_label.grid(row=2, column=0, pady=(5, 10))
             
             add_button = tk.Button(item_card, text="Add to Cart", font=('Helvetica', 10, 'bold'), bg="#10b981", fg="white", activebackground="#059669", activeforeground="white", relief="flat", command=lambda i=item: addtoCart(i))
@@ -190,8 +199,9 @@ def create_menu_items(parent_frame, food_data):
 
 def checkout():
     """
-    Processes the final order, prints a summary to the terminal,
-    and then clears the cart.
+    Checkout process with card payment UI.
+    Opens a payment window, validates card info,
+    and clears cart after successful payment.
     """
     if not cart_items:
         print("\n--- CHECKOUT ABORTED ---")
@@ -199,46 +209,212 @@ def checkout():
         print("------------------------\n")
         return
 
-    # 1. Summarize the items
-    item_counts = {}
-    total_price = 0.0
-    for item in cart_items:
-        item_name = item['name']
-        price = item['price']
-        
-        # Aggregate quantity and calculate total
-        if item_name not in item_counts:
-            item_counts[item_name] = {'quantity': 0, 'price': price}
-        
-        item_counts[item_name]['quantity'] += 1
-        total_price += price
+    
+    pay_win = tk.Toplevel(root)
+    pay_win.title("💳 Card Payment")
+    pay_win.geometry("400x400")
+    pay_win.config(bg=MainBG)
+    pay_win.grab_set()
 
-    # 2. Print the formatted receipt
-    print("\n" + "="*40)
-    print(f"{'ORDER RECEIPT':^40}")
-    print("="*40)
+    tk.Label(pay_win, text="💳 Card Payment", font=("Arial", 16, "bold"), bg=MainBG, fg="white").pack(pady=10)
+
     
-    # Print each unique item
-    for name, data in item_counts.items():
-        qty = data['quantity']
-        price_per_unit = data['price']
-        subtotal = qty * price_per_unit
-        
-        item_line = f"{name} ({qty} x RM{price_per_unit:.2f})"
-        price_line = f"RM{subtotal:.2f}"
-        
-        # Print item name left-aligned and subtotal right-aligned
-        print(f"{item_line:<30}{price_line:>10}")
-        
-    print("-" * 40)
-    print(f"{'TOTAL:':<30}RM{total_price:>7.2f}")
-    print("="*40)
-    print("Thank you for your order! It is now being prepared.")
-    print("="*40 + "\n")
+    countdown_label = tk.Label(pay_win, text="Time Remaining: 180", font=("Arial", 10, "bold"), fg="green", bg=MainBG)
+    countdown_label.pack(pady=5)
+    time_remaining = [180]
+    timer_id = [None]
+
+    def countdown_timer():
+        if time_remaining[0] > 0:
+            time_remaining[0] -= 1
+            countdown_label.config(text=f"Time Remaining: {time_remaining[0]}")
+            if time_remaining[0] < 30:
+                countdown_label.config(fg="red")
+            timer_id[0] = pay_win.after(1000, countdown_timer)
+        else:
+            tk.messagebox.showwarning("Timeout", "Order cancelled due to timeout.")
+            pay_win.destroy()
+
+    countdown_timer()
+
     
-    # 3. Clear the cart and update the display
-    cart_items.clear()
-    update_cart_display()
+    tk.Label(pay_win, text="Card Number (16 digits):", bg=MainBG, fg="white").pack(pady=2)
+    card_entry = tk.Entry(pay_win)
+    card_entry.pack()
+
+    tk.Label(pay_win, text="CVV (3 digits):", bg=MainBG, fg="white").pack(pady=2)
+    cvv_entry = tk.Entry(pay_win, show="*")
+    cvv_entry.pack()
+
+    tk.Label(pay_win, text="Expiry Date (MM/YY):", bg=MainBG, fg="white").pack(pady=2)
+    expiry_entry = tk.Entry(pay_win)
+    expiry_entry.pack()
+
+    status_label = tk.Label(pay_win, text="", fg="red", bg=MainBG)
+    status_label.pack(pady=5)
+
+    progress_bar = ttk.Progressbar(pay_win, orient="horizontal", mode="indeterminate")
+
+    #Payment 
+    def process_payment():
+        card = card_entry.get()
+        cvv = cvv_entry.get()
+        expiry = expiry_entry.get()
+
+        if not card.isdigit() or len(card) != 16:
+            status_label.config(text="❌ Invalid card number.")
+            return
+        if not cvv.isdigit() or len(cvv) != 3:
+            status_label.config(text="❌ Invalid CVV.")
+            return
+        if len(expiry) != 5 or expiry[2] != '/':
+            status_label.config(text="❌ Invalid expiry date format.")
+            return
+
+        try:
+            exp_month = int(expiry[:2])
+            exp_year = int(expiry[3:]) + 2000
+            now = datetime.datetime.now()
+            if exp_month < 1 or exp_month > 12:
+                status_label.config(text="❌ Invalid expiry month.")
+                return
+            if exp_year < now.year or (exp_year == now.year and exp_month < now.month):
+                status_label.config(text="❌ Card expired.")
+                return
+        except ValueError:
+            status_label.config(text="❌ Invalid expiry date.")
+            return
+
+        #cancel timer
+        if timer_id[0]:
+            pay_win.after_cancel(timer_id[0])
+
+        #Simulate phone authorization
+        def show_approval():
+            auth_win = tk.Toplevel(pay_win)
+            auth_win.title("Authorization")
+            auth_win.geometry("300x120")
+            auth_win.transient(pay_win)
+            auth_win.grab_set()
+
+            tk.Label(auth_win, text="Authorization request sent to phone.", font=("Arial", 10)).pack(pady=10)
+            tk.Button(auth_win, text="I've Authorized/Rejected",
+                      command=lambda: (auth_win.destroy(), authorize_payment())
+                      , bg="green", fg="white").pack(pady=5)
+
+        def authorize_payment():
+            status_label.config(text="Processing payment...")
+            progress_bar.pack(pady=10)
+            progress_bar.start(3)
+            pay_win.after(3000, payment_complete)
+
+        def payment_complete():
+                progress_bar.stop()
+                progress_bar.pack_forget()
+
+                #Prepare receipt data BEFORE clearing the cart
+                cart_items_copy = cart_items.copy()
+                total_price = sum(item['price'] for item in cart_items_copy)
+                last_four = card[-4:]
+
+                # Clear cart and update UI
+                cart_items.clear()
+                update_cart_display()
+
+                # Show receipt (uses the copied list and computed total)
+                show_receipt(cart_items_copy, total_price, last_four)
+
+                messagebox.showinfo("Payment Status", "Payment successful! Enjoy your order 🎉")
+                pay_win.destroy()
+
+        show_approval()
+
+    tk.Button(pay_win, text="Pay", command=process_payment, bg="#10b981", fg="white", font=("Arial", 12, "bold")).pack(pady=20)
+
+def show_receipt(cart_items, total_price, last_four):
+    
+    receipt_win = tk.Toplevel(root)
+    receipt_win.title("🎥 Cinema Receipt")
+    receipt_win.geometry("500x600")
+    receipt_win.config(bg=MainBG)
+
+    title = tk.Label(receipt_win, text="🎥 Cinema Food Receipt", 
+                     font=("Arial", 16, "bold"), bg=MainBG, fg="white")
+    title.pack(pady=10)
+
+    # Build receipt text
+    current = datetime.datetime.now()
+    receipt_time = current.strftime("%I:%M %p")
+    receipt_date = current.strftime("%d %B %Y")
+    transaction_id = str(uuid.uuid4())[:8]  # shorten UUID
+
+    receipt_text = (
+        f"Transaction ID: {transaction_id}\n"
+        f"Date: {receipt_date}\n"
+        f"Time: {receipt_time}\n"
+        f"------------------------------\n"
+    )
+
+    for item in cart_items:
+        receipt_text += f"{item['name']} - ${item['price']:.2f}\n"
+
+    receipt_text += (
+        f"------------------------------\n"
+        f"Total Paid: ${total_price:.2f}\n"
+        f"Paid by Card: ************{last_four}\n"
+        f"==============================\n"
+        f"Thank you for your visit! 🎟️\n\n"
+        f"Terms & Conditions:\n"
+        f"- Food are non-refundable and non-exchangeable.\n"
+        f"- Please arrive on time.\n"
+        f"- Lost or damaged items cannot be replaced.\n"
+        f"- Management reserves the right to refuse service."
+    )
+
+    receipt_label = tk.Label(receipt_win, text=receipt_text, 
+                             justify="left", font=("Courier", 11), 
+                             bg=MainBG, fg="white", anchor="w")
+    receipt_label.pack(padx=20, pady=10, fill="both", expand=True)
+
+    def save_as_pdf():
+        try:
+            now = datetime.datetime.now()
+            filename = now.strftime("CinemaReceipt_%Y-%m-%d_%H%M%S")
+
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".pdf",
+                filetypes=[("PDF files", "*.pdf")],
+                title="Save Receipt as PDF",
+                initialfile=filename
+            )
+            if not file_path:
+                return
+
+            doc = SimpleDocTemplate(file_path, pagesize=letter)
+            styles = getSampleStyleSheet()
+            story = []
+
+            title_style = ParagraphStyle('TitleStyle', parent=styles['Normal'],
+                                         fontSize=20, alignment=TA_CENTER,
+                                         spaceAfter=12)
+            story.append(Paragraph("Cinema Ticket Receipt", title_style))
+            story.append(Spacer(1, 12))
+
+            for line in receipt_text.split('\n'):
+                story.append(Paragraph(line, styles['Normal']))
+                story.append(Spacer(1, 6))
+
+            doc.build(story)
+            messagebox.showinfo("Success", f"Receipt saved to:\n{file_path}")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save PDF: {e}")
+
+    tk.Button(receipt_win, text="Save as PDF", command=save_as_pdf, 
+              bg="#10b981", fg="white", font=("Arial", 12, "bold")).pack(pady=10)
+
+    tk.Button(receipt_win, text="Close", command=receipt_win.destroy, 
+              bg="#6b7280", fg="white", font=("Arial", 12, "bold")).pack(pady=5)
 
 # Main application setup
 root = tk.Tk()
@@ -323,16 +499,16 @@ menu_title_label.grid(row=0, column=0, columnspan=3, pady=10)
 cart_title_label = tk.Label(cart_frame, text="Your Cart", font=('Helvetica', 18, 'bold'), bg="#2d3748", fg=MainFG)
 cart_title_label.grid(row=0, column=0, pady=10, sticky="ew")
 
-# The permanent "Skip & Pay" button
-skip_button = tk.Button(
+# The permanent " Pay" button
+pay_button = tk.Button(
     cart_frame,
-    text="Skip & Pay",
+    text="Pay",
     font=('Helvetica', 14, 'bold'),
     bg="#6b7280",
     fg="#ffffff",
     command=checkout
 )
-skip_button.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 5))
+pay_button.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 5))
 
 # Open the JSON data and create the menu
 food_data = open_json_db()
