@@ -4,6 +4,7 @@ import os
 from PIL import Image, ImageTk
 from seat import show_seat_page
 from Fud import show_food_page
+from app import show_app_page
 
 # --- Movie Data ---
 movies = [
@@ -49,6 +50,10 @@ def select_movie():
 def select_food():
 	root._main_frame.pack_forget()
 	show_food_page(root, checkout_callback=None, json_path="FoodDrinks.json")
+
+def select_app():
+	root._main_frame.pack_forget()
+	show_app_page(root)
 
 def auto_rotate():
 	if carousel_running:
@@ -105,6 +110,12 @@ btn2_frame.pack(pady=10)
 
 food_btn = ctk.CTkButton(btn2_frame, text="Order Food", command=lambda: select_food(), width=200, height=50, font=("Arial", 18))
 food_btn.grid(row=0, column=0, padx=10)
+
+btn3_frame = ctk.CTkFrame(main_frame)
+btn3_frame.pack(pady=10, padx=10)
+
+app_btn = ctk.CTkButton(btn3_frame, text="Movie similarity finder", command=lambda: select_app(), width=200, height=50, font=("Arial", 18))
+app_btn.grid(row=0, column=0, padx=10)
 
 show_movie(current_index)
 root.after(3000, auto_rotate)

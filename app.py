@@ -1,91 +1,117 @@
-# app_tk.py
+# app.py
+import customtkinter as ctk
+from tkinter import messagebox
 import tkinter as tk
-from tkinter import messagebox, ttk
 from utils import load_csv, inference
 
-MOVIES_CSV = "movies.csv"  
+MOVIES_CSV = "movies.csv"
 
-def find_movie_by_title(movies, query):
-    q = query.strip().lower()
-    if not q:
+def show_app_page(parent):
+    """
+    Swaps out parent._main_frame and replaces it with the movie-recommender UI.
+    Returns the new frame so you could keep a reference if you like.
+    """
+    # 1) hide the existing main page
+    main = getattr(parent, "_main_frame", None)
+    if main:
+        main.pack_forget()
+
+    # 2) build a new CTkFrame to host the recommender
+    app_frame = ctk.CTkFrame(parent, corner_radius=15)
+    app_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+    # --- Header ---
+    header = ctk.CTkLabel(
+        app_frame,
+        text="Movie Recommender",
+        font=("Arial", 24, "bold")
+    )
+    header.pack(pady=(0, 20))
+
+    # --- Search row ---
+    search_row = ctk.CTkFrame(app_frame)
+    search_row.pack(fill="x", pady=(0, 10))
+    search_row.columnconfigure(1, weight=1)
+
+    ctk.CTkLabel(search_row, text="Movie title:").grid(row=0, column=0, sticky="w")
+    entry = ctk.CTkEntry(search_row)
+    entry.grid(row=0, column=1, sticky="ew", padx=(8, 8))
+    search_btn = ctk.CTkButton(search_row, text="Search")
+    search_btn.grid(row=0, column=2)
+
+    target_label = ctk.CTkLabel(app_frame, text="Target: —", font=("Arial", 14))
+    target_label.pack(anchor="w", pady=(0, 10))
+
+    # --- Results list ---
+    list_container = tk.Frame(app_frame)
+    list_container.pack(fill="both", expand=True, pady=(0, 20))
+    listbox = tk.Listbox(list_container, height=12)
+    listbox.pack(side="left", fill="both", expand=True)
+    scrollbar = tk.Scrollbar(list_container, orient="vertical", command=listbox.yview)
+    scrollbar.pack(side="right", fill="y")
+    listbox.config(yscrollcommand=scrollbar.set)
+
+    # --- Back button ---
+    def go_back():
+        app_frame.pack_forget()
+        if main:
+            main.pack(fill="both", expand=True)
+
+    back_btn = ctk.CTkButton(app_frame, text="Back", command=go_back)
+    back_btn.pack(side="bottom", pady=(0, 10))
+
+    # --- Load movies once ---
+    try:
+        movies = load_csv(MOVIES_CSV)
+    except FileNotFoundError:
+        messagebox.showerror("Error", f"Could not find {MOVIES_CSV}")
+        movies = []
+
+    def find_movie_by_title(query):
+        q = query.strip().lower()
+        if not q:
+            return None
+        # exact match
+        for m in movies:
+            if m["title"].lower() == q:
+                return m
+        # partial
+        for m in movies:
+            if q in m["title"].lower():
+                return m
         return None
-    for m in movies:
-        if m['title'].lower() == q:
-            return m
-    for m in movies:
-        if q in m['title'].lower():
-            return m
-    return None
 
-class SimpleRecommenderApp:
-    def __init__(self, root):
-        self.root = root
-        root.title("Simple Movie Search (20 similar)")
-
-        try:
-            self.movies = load_csv(MOVIES_CSV)
-        except FileNotFoundError:
-            messagebox.showerror("Error", f"Could not find {MOVIES_CSV}")
-            root.destroy()
+    # --- Search logic ---
+    def do_search(_evt=None):
+        q = entry.get().strip()
+        if not q:
+            messagebox.showinfo("Info", "Type a movie title and click Search.")
             return
 
-        frm = ttk.Frame(root, padding=10)
-        frm.grid(row=0, column=0, sticky="ew")
-        frm.columnconfigure(1, weight=1)
-
-        ttk.Label(frm, text="Movie title:").grid(row=0, column=0, sticky="w")
-        self.entry = ttk.Entry(frm)
-        self.entry.grid(row=0, column=1, sticky="ew", padx=(6,0))
-        self.entry.bind("<Return>", lambda e: self.search())
-
-        self.search_btn = ttk.Button(frm, text="Search", command=self.search)
-        self.search_btn.grid(row=0, column=2, padx=(6,0))
-
-        self.target_label = ttk.Label(root, text="Target: —", padding=(10,6,10,0))
-        self.target_label.grid(row=1, column=0, sticky="w")
-
-        list_frame = ttk.Frame(root, padding=10)
-        list_frame.grid(row=2, column=0, sticky="nsew")
-        root.rowconfigure(2, weight=1)
-        root.columnconfigure(0, weight=1)
-
-        self.listbox = tk.Listbox(list_frame, height=20)
-        self.listbox.pack(side="left", fill="both", expand=True)
-
-        scrollbar = ttk.Scrollbar(list_frame, orient="vertical", command=self.listbox.yview)
-        scrollbar.pack(side="right", fill="y")
-        self.listbox.config(yscrollcommand=scrollbar.set)
-
-    def search(self):
-        query = self.entry.get().strip()
-        if not query:
-            messagebox.showinfo("Info", "Type a movie title (or part of it) and click Search.")
-            return
-
-        movie = find_movie_by_title(self.movies, query)
-        if movie is None:
+        m = find_movie_by_title(q)
+        if not m:
             messagebox.showinfo("Not found", "No movie matched that title.")
             return
 
-        results = inference(self.movies, movie['id'])
-        if results is None:
-            messagebox.showerror("Error", "Failed to compute similarities for this movie.")
+        results = inference(movies, m["id"])
+        if not results:
+            messagebox.showerror("Error", "Failed to compute similarities.")
             return
 
-        self.target_label.config(text=f"Target: {results['target_title']}")
-        self.listbox.delete(0, tk.END)
+        target_label.configure(text=f"Target: {results['target_title']}")
+        listbox.delete(0, tk.END)
 
-        similar = results.get('similar_movies', [])
-        if not similar:
-            self.listbox.insert(tk.END, "No similar movies found.")
+        sims = results.get("similar_movies", [])
+        if not sims:
+            listbox.insert(tk.END, "No similar movies found.")
             return
 
-        for i, item in enumerate(similar, start=1):
+        for i, item in enumerate(sims, start=1):
             line = f"{i:2d}. {item['title']}  —  sim: {item['similarity']:.3f}"
-            self.listbox.insert(tk.END, line)
+            listbox.insert(tk.END, line)
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = SimpleRecommenderApp(root)
-    root.geometry("640x480")
-    root.mainloop()
+    entry.bind("<Return>", do_search)
+    search_btn.configure(command=do_search)
+
+    # Return the frame in case caller wants to hold it
+    return app_frame
