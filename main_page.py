@@ -108,13 +108,13 @@ next_btn.grid(row=0, column=2, padx=10)
 btn2_frame = ctk.CTkFrame(main_frame)
 btn2_frame.pack(pady=10)
 
-food_btn = ctk.CTkButton(btn2_frame, text="Order Food", command=lambda: select_food(), width=200, height=50, font=("Arial", 18))
+food_btn = ctk.CTkButton(btn2_frame, text="Order Food", command=select_food, width=200, height=50, font=("Arial", 18))
 food_btn.grid(row=0, column=0, padx=10)
 
 btn3_frame = ctk.CTkFrame(main_frame)
 btn3_frame.pack(pady=10, padx=10)
 
-app_btn = ctk.CTkButton(btn3_frame, text="Movie similarity finder", command=lambda: select_app(), width=200, height=50, font=("Arial", 18))
+app_btn = ctk.CTkButton(btn3_frame, text="Movie similarity finder", command=select_app, width=200, height=50, font=("Arial", 18))
 app_btn.grid(row=0, column=0, padx=10)
 
 show_movie(current_index)
