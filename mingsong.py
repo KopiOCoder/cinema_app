@@ -46,8 +46,8 @@ class CinemaKiosk(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Cinema Kiosk")
-        self.geometry("1000x1000")
         self.resizable(False, False)
+        self.config(bg="#1f2937")
 
         
         #shared variables
@@ -81,28 +81,29 @@ class TicketSelectionFrame(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+        self.config(bg="#1f2937")
 
-        title = tk.Label(self, text="🎬 Buy Your Tickets", font=("Arial", 16, "bold"))
+        title = tk.Label(self, text="🎬 Buy Your Tickets", font=("Arial", 16, "bold"), fg="#ffffff", bg="#1f2937")
         title.pack(pady=10)
 
-        tk.Label(self, text=f"Movie: {movie_title}").pack(pady=5)
-        tk.Label(self, text=f"Total Seats Selected: {self.controller.selected_seats_count}").pack(pady=5)
+        tk.Label(self, text=f"Movie: {movie_title}", fg="#ffffff", bg="#1f2937" ).pack(pady=5)
+        tk.Label(self, text=f"Total Seats Selected: {self.controller.selected_seats_count}", fg="#ffffff", bg="#1f2937").pack(pady=5)
 
-        tk.Label(self, text="Adult Tickets:").pack(pady=5)
+        tk.Label(self, text="Adult Tickets:", fg="#ffffff", bg="#1f2937").pack(pady=5)
         self.adult_entry = tk.Entry(self)
         self.adult_entry.pack()
 
-        tk.Label(self, text="Child Tickets:").pack(pady=5)
+        tk.Label(self, text="Child Tickets:", fg="#ffffff", bg="#1f2937").pack(pady=5)
         self.child_entry = tk.Entry(self)
         self.child_entry.pack()
 
-        tk.Button(self, text="Calculate Fare", command=self.calculate).pack(pady=20)
-        self.status_label = tk.Label(self, text="", fg="red")
+        tk.Button(self, text="Calculate Fare", command=self.calculate, fg="#ffffff", bg="#10b981").pack(pady=20)
+        self.status_label = tk.Label(self, text="", fg="red", bg="#1f2937")
         self.status_label.pack()
 
         #Terms and Conditions
         tnc_text = "Terms & Conditions:\nBy purchasing this ticket, you agree that tickets are non-refundable and non-exchangeable. Please arrive on time as late entry may not be permitted. Lost or damaged tickets cannot be replaced. Showtimes and prices may change without notice. Management reserves the right to refuse admission. Please purchase tickets honestly — misuse of age, student, or concession tickets may result in denied entry."
-        tk.Label(self, text=tnc_text, font=("Arial", 8), justify=tk.LEFT, wraplength=550).pack(pady=10)
+        tk.Label(self, text=tnc_text, font=("Arial", 8), justify=tk.LEFT, wraplength=500, fg="#ffffff", bg="#1f2937", padx=45).pack(pady=50)
 
     def tkraise(self, *args, **kwargs):
         #Clears the entry fields and status label when this frame is shown
@@ -144,15 +145,16 @@ class SummaryFrame(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+        self.config(bg="#1f2937")
 
-        title = tk.Label(self, text="🎬 Order Summary", font=("Arial", 16, "bold"))
+        title = tk.Label(self, text="🎬 Order Summary", font=("Arial", 16, "bold"),  fg="#ffffff", bg="#1f2937")
         title.pack(pady=10)
 
-        self.summary_label = tk.Label(self, text="", font=("Arial", 12))
+        self.summary_label = tk.Label(self, text="", font=("Arial", 12),  fg="#ffffff", bg="#1f2937")
         self.summary_label.pack(pady=5)
 
-        tk.Button(self, text="Proceed to Payment", command=lambda: controller.show_frame("PaymentFrame")).pack(pady=10)
-        tk.Button(self, text="Cancel Order", command=self.cancel_order).pack(pady=5)
+        tk.Button(self, text="Proceed to Payment", command=lambda: controller.show_frame("PaymentFrame"), bg="#10b981", fg="white", activebackground="#059669").pack(pady=10)
+        tk.Button(self, text="Cancel Order", command=self.cancel_order, bg="#10b981", fg="white", activebackground="#059669").pack(pady=5)
 
     def tkraise(self, *args, **kwargs):
         #Update summary 
@@ -172,30 +174,31 @@ class PaymentFrame(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+        self.config(bg="#1f2937")
 
-        title = tk.Label(self, text="💳 Card Payment", font=("Arial", 16, "bold"))
+        title = tk.Label(self, text="💳 Card Payment", font=("Arial", 16, "bold"), fg="#ffffff", bg="#1f2937")
         title.pack(pady=10)
 
         #countdown timer 
-        self.countdown_label = tk.Label(self, text="Time Remaining: 60", font=("Arial", 10, "bold"), fg="blue")
+        self.countdown_label = tk.Label(self, text="Time Remaining: 60", font=("Arial", 10, "bold"), fg="#ffffff", bg="#1f2937")
         self.countdown_label.pack(pady=5)
         self.time_remaining = 60
         self.timer_id = None
 
-        tk.Label(self, text="Card Number (16 digits):").pack()
+        tk.Label(self, text="Card Number (16 digits):", fg="#ffffff", bg="#1f2937").pack()
         self.card_entry = tk.Entry(self)
         self.card_entry.pack()
 
-        tk.Label(self, text="CVV (3 digits):").pack()
+        tk.Label(self, text="CVV (3 digits):", fg="#ffffff", bg="#1f2937").pack()
         self.cvv_entry = tk.Entry(self)
         self.cvv_entry.pack()
 
-        tk.Label(self, text="Expiry Date (MM/YY):").pack()
+        tk.Label(self, text="Expiry Date (MM/YY):", fg="#ffffff", bg="#1f2937").pack()
         self.expiry_entry = tk.Entry(self)
         self.expiry_entry.pack()
 
-        tk.Button(self, text="Pay", command=self.process_payment).pack(pady=20)
-        self.status_label = tk.Label(self, text="", fg="red")
+        tk.Button(self, text="Pay", command=self.process_payment, fg="#ffffff", bg="#10b981").pack(pady=20)
+        self.status_label = tk.Label(self, text="", fg="red", bg="#1f2937")
         self.status_label.pack()
 
         self.progress_bar = ttk.Progressbar(self, orient="horizontal", mode="indeterminate")
@@ -228,7 +231,10 @@ class PaymentFrame(tk.Frame):
 
             #change color for a sense of urgency :D
             if self.time_remaining < 30:
-                self.countdown_label.config(fg="red")
+                self.countdown_label.config(fg="red", bg="#1f2937")
+            elif self.time_remaining < 60:
+                self.countdown_label.config(fg="orange", bg="#1f2937")
+
 
             #let it repeat
             self.timer_id = self.after(1000, self.countdown_timer) 
@@ -290,14 +296,16 @@ class PaymentFrame(tk.Frame):
         
         self.approval_window = tk.Toplevel(self.controller)
         self.approval_window.title("Authorization")
-        self.approval_window.geometry("300x120")
+        self.approval_window.geometry("450x100")
         self.approval_window.transient(self.controller)
         self.approval_window.grab_set()
+        self.approval_window.config(bg="#1f2937")
 
-        tk.Label(self.approval_window, text="An authorization request has been sent to your phone.", font=("Arial", 10)).pack(pady=10)
+        tk.Label(self.approval_window, text="An authorization request has been sent to your phone.", font=("Arial", 10), fg="#ffffff", bg="#1f2937").pack(pady=10)
 
      
         btn_frame = tk.Frame(self.approval_window)
+        btn_frame.config(bg="#1f2937")
         btn_frame.pack(pady=10)
         tk.Button(btn_frame, text="I've Authorized/Rejected Transaction", command=self.authorize_payment, bg="green", fg="white").pack(side=tk.LEFT, padx=5)
 
@@ -330,15 +338,17 @@ class ReceiptFrame(tk.Frame):
     def __init__(self, parent, controller): 
         super().__init__(parent)
         self.controller = controller
+        self.config(bg="#1f2937")
 
-        title = tk.Label(self, text="🎥 Cinema Ticket Receipt", font=("Arial", 16, "bold"))
+
+        title = tk.Label(self, text="🎥 Cinema Ticket Receipt", font=("Arial", 16, "bold"), bg="#1f2937", fg="white")
         title.pack(pady=10)
 
-        self.receipt_label = tk.Label(self, text="", justify=tk.LEFT, font=("Courier", 12))
-        self.receipt_label.pack(pady=5)
+        self.receipt_label = tk.Label(self, text="", justify=tk.LEFT, font=("Courier", 12), bg="#1f2937", fg="white", wraplength=500)
+        self.receipt_label.pack(padx=25, pady=10)
 
-        tk.Button(self, text="Save as PDF", command=self.save_as_pdf).pack(pady=5)
-        tk.Button(self, text="Close", command=self.return_to_ticket_selection).pack(pady=5)
+        tk.Button(self, text="Save as PDF", command=self.save_as_pdf, bg="#10b981", fg="white", activebackground="#059669").pack(pady=5)
+        tk.Button(self, text="Close", command=self.return_to_ticket_selection , bg="#10b981", fg="white", activebackground="#059669").pack(pady=5)
 
     def tkraise(self, *args, **kwargs):
         #Update receipt details 
@@ -355,16 +365,16 @@ class ReceiptFrame(tk.Frame):
         receipt_text = (
             f"Transaction ID: {transaction_id}\n"
             f"Date: {receipt_date}\n"
-            f"Time: {receipt_time}\n"
-            f"------------------------------\n"
+            f"Time: {receipt_time}\n\n"
+            f"------------------------------\n\n"
             f"Adult Tickets: {adults} x $15.00\n"
             f"Child Tickets: {children} x $10.00\n"
-            f"Seats: {', '.join(selected_seats)}\n"
-            f"------------------------------\n"
+            f"Seats: {', '.join(selected_seats)}\n\n"
+            f"------------------------------\n\n"
             f"Total Paid: ${total:.2f}\n"
-            f"Paid by Card: ************{last_four}\n"
-            f"==============================\n"
-            f"Thank you for your visit! 🎟️\n"
+            f"Paid by Card: ************{last_four}\n\n"
+            f"==============================\n\n"
+            f"Thank you for your visit! 🎟️\n\n"
              f"Terms & Conditions:\n"
             f"By purchasing this ticket, you agree that tickets are non-refundable and non-exchangeable.\n"
             f"Please arrive on time as late entry may not be permitted.\n"
