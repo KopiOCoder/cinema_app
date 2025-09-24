@@ -1,17 +1,14 @@
-import tkinter as tk
+import customtkinter as ctk
 from tkinter import messagebox
 import sqlite3
-import sys
-movie_title = sys.argv[1] if len(sys.argv) > 1 else "[No Movie Selected]"
-import subprocess
+import os
 
+rows_top = ["A", "B", "C", "D"]
+rows_bottom = ["E", "F", "G"]
 
-db_path = f"{movie_title.replace(' ', '_')}.db"
-
-def init_db():
+def init_db(db_path):
     cnct = sqlite3.connect(db_path)
     cur = cnct.cursor()
-    # Create table if not exists
     cur.execute("""
         CREATE TABLE IF NOT EXISTS seats (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,35 +17,26 @@ def init_db():
             booked INTEGER DEFAULT 0
         )
     """)
-    rows_top = ["A", "B", "C", "D"]
-    rows_bottom = ["E", "F", "G"]
-    
-    # Insert seats if not exists
-    for row in rows_top:
-        for num in range(1, 9):
-            cur.execute("SELECT * FROM seats WHERE row=? AND number=?", (row, num))
-            if not cur.fetchone():
-                cur.execute("INSERT INTO seats (row, number, booked) VALUES (?, ?, 0)", (row, num))
-    
-    for row in rows_bottom:
+    # Optionally, populate seats if not already present
+    for row in rows_top + rows_bottom:
         for num in range(1, 11):
             cur.execute("SELECT * FROM seats WHERE row=? AND number=?", (row, num))
             if not cur.fetchone():
                 cur.execute("INSERT INTO seats (row, number, booked) VALUES (?, ?, 0)", (row, num))
-    
     cnct.commit()
     cnct.close()
 
-def get_seat_status():
+def get_seat_status(db_path):
     cnct = sqlite3.connect(db_path)
     cur = cnct.cursor()
     cur.execute("SELECT row, number, booked FROM seats")
-    seats = {f"{row}{num}": booked for row, num, booked in cur.fetchall()}
+    status = {}
+    for row, num, booked in cur.fetchall():
+        status[f"{row}{num}"] = booked
     cnct.close()
-    return seats
+    return status
 
-def book_seat(seat_name):
-    """seat_name = 'A1', 'B3', etc."""
+def book_seat(db_path, seat_name):
     row = seat_name[0]
     num = int(seat_name[1:])
     cnct = sqlite3.connect(db_path)
@@ -56,93 +44,82 @@ def book_seat(seat_name):
     cur.execute("UPDATE seats SET booked=1 WHERE row=? AND number=?", (row, num))
     cnct.commit()
     cnct.close()
-#detail of seat
-rows_top = ["A", "B", "C", "D"]    
-rows_bottom = ["E", "F", "G"] 
 
-init_db()
-seat_status = get_seat_status()
-selected_seats = []  
-seat_btn = {} 
+def show_seat_page(parent, movie_title):
+    db_path = f"{movie_title.replace(' ', '_')}.db"
+    init_db(db_path)
+    seat_status = get_seat_status(db_path)
+    selected_seats = []
 
-#function of choosing seat
-def choose_seat(seat_id, btn):
-    if seat_status.get(seat_id) == 1:  # Already booked
-        messagebox.showwarning("Unavailable", f"Seat {seat_id} is already booked ❌")
-        return
-    
-    if seat_id in selected_seats:  
-        # Deselect
-        selected_seats.remove(seat_id)
-        btn.config(bg="green", text=seat_id[1:])  #as default
-    else:
-        # Select
-        selected_seats.append(seat_id)
-        btn.config(bg="orange")  # selected
+    seat_frame = ctk.CTkFrame(parent, width=600, height=500, corner_radius=15)
+    seat_frame.pack(pady=40)
 
-#function of turning page
-def detail_pg():
-    if not selected_seats:
-        messagebox.showwarning("No Selection", "Please select at least one seat")
-        return
-    seats_str = ",".join(selected_seats)
-    seat_count = len(selected_seats)
-    subprocess.call(["python", "mingsong.py", movie_title, str(seat_count), seats_str])
-    sys.exit()  
-root = tk.Tk()
-root.title("Cinema Seat Booking")
-root.geometry("1000x700")
+    seat_label = ctk.CTkLabel(seat_frame, text=f"Seat Selection for {movie_title}", font=("Arial", 20, "bold"))
+    seat_label.pack(pady=20)
 
-#header
-header_pg = tk.Label(root, text="🎬 Cinema Seat Booking System",
-                 font=("Arial", 18, "bold"), fg="white", bg="grey")
-header_pg.pack(pady=10)
+    grid_frame = ctk.CTkFrame(seat_frame)
+    grid_frame.pack(pady=10)
 
-#the screen in front
-screen = tk.Label (root, text= movie_title,font="black", width=30, height=2)
-screen.pack(pady=10)
+    seat_btns = {}
 
-seat_frame = tk.Frame(root)
-seat_frame.pack(pady=20)
+    def choose_seat(seat_name):
+        if seat_status[seat_name]:
+            messagebox.showwarning("Unavailable", f"Seat {seat_name} is already booked.")
+            return
+        if seat_name in selected_seats:
+            selected_seats.remove(seat_name)
+            seat_btns[seat_name].configure(fg_color="#222")
+        else:
+            selected_seats.append(seat_name)
+            seat_btns[seat_name].configure(fg_color="#0af")
 
-for r, row in enumerate(rows_top): # as a list
-    tk.Label(seat_frame, text=row,font=("Arial", 12, "bold")).grid(row=r, column=0, padx=10)
+    # Create seat buttons
+    for r, row in enumerate(rows_top + rows_bottom):
+        grid_col = 0
+        for num in range(1, 11):
+            if num in (3, 9):          # put a visual gap before seat 3 and before seat 9
+                gap = ctk.CTkLabel(grid_frame, text="   ", width=20)
+                gap.grid(row=r, column=grid_col, padx=4)
+                grid_col += 1
 
-    for c in range(1, 9): # draw the seat 1--8 based on their alphabets
-        seat_id = f"{row}{c}"
-        booked = seat_status.get(seat_id)
-        btn_text = "❌" if booked else str(c)
-        btn_color = "gray" if booked else "green"
-        btn = tk.Button(seat_frame, text=btn_text, width=4, height=2,
-                        bg=btn_color, fg="white", font=("Arial", 10, "bold"))
-        
-        btn.grid(row=r, column=c+1, padx=5, pady=5)  # shift +1 for centering
-        btn.config(command=lambda s=seat_id, b=btn: choose_seat(s, b))
-        seat_btn[seat_id] = btn
-    tk.Label(seat_frame, text=row,font=("Arial", 12, "bold")).grid(row=r, column=10, padx=10)
+            seat_name = f"{row}{num}"
+            btn = ctk.CTkButton(
+                grid_frame,
+                text=seat_name,
+                width=40,
+                height=30,
+                fg_color="#888" if seat_status.get(seat_name, 0) else "#222",
+                command=lambda sn=seat_name: choose_seat(sn)
+            )
+            btn.grid(row=r, column=grid_col, padx=4, pady=4)
+            seat_btns[seat_name] = btn
+            grid_col += 1
 
-#as the walk way between the top row and bottom row
-gap_row = len(rows_top)
-tk.Label(seat_frame).grid(row=gap_row, column=0, pady=20)
+    def proceed_payment():
+        if not selected_seats:
+            messagebox.showwarning("No Selection", "Please select at least one seat")
+            return
+        import subprocess
+        seats_str = ",".join(selected_seats)
+        seat_count = len(selected_seats)
+        subprocess.call(["python", "mingsong.py", movie_title, str(seat_count), seats_str])
+        messagebox.showinfo("Payment", "Payment successful! Seats booked.")
+        seat_frame.pack_forget()
+        show_seat_page(parent, movie_title)
+        # Optionally, call a callback to go back to main page
 
-for r, row in enumerate(rows_bottom, start=gap_row + 1):
-    tk.Label(seat_frame, text=row,font=("Arial", 12, "bold")).grid(row=r, column=0, padx=10)
+    pay_btn = ctk.CTkButton(seat_frame, text="Proceed to Payment", command=proceed_payment)
+    pay_btn.pack(pady=20)
 
-    for c in range(1, 11):
-        seat_id = f"{row}{c}"
-        booked = seat_status.get(seat_id)
-        btn_text = "❌" if booked else str(c)
-        btn_color = "gray" if booked else "green"
+    def go_back():
+        seat_frame.pack_forget()
+        existing_main = getattr(parent, "_main_frame", None)
+        if existing_main is not None:
+            existing_main.pack(fill="both", expand=True)
+        else:
+            seat_frame.destroy()
 
-        btn = tk.Button(seat_frame, text=btn_text, width=4, height=2,
-                        bg=btn_color, fg="white", font=("Arial", 10, "bold"))
-        btn.grid(row=r, column=c, padx=5, pady=5)
-        btn.config(command=lambda s=seat_id, b=btn: choose_seat(s, b))
-        seat_btn[seat_id] = btn
-    tk.Label(seat_frame, text=row,font=("Arial", 12, "bold")).grid(row=r, column=11, padx=10)
+    back_btn = ctk.CTkButton(seat_frame, text="Back", command=go_back)
+    back_btn.pack(pady=4)
 
-tk.Button(root, text="Proceed to Payment", bg="blue", fg="white",
-          font=("Arial", 14, "bold"), command=detail_pg, width=20, height=10).pack(pady=20)
-
-root.mainloop()
-
+    return seat_frame

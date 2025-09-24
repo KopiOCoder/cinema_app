@@ -2,7 +2,9 @@ import customtkinter as ctk
 from tkinter import messagebox
 import os
 from PIL import Image, ImageTk
-
+from seat import show_seat_page
+from Fud import show_food_page
+from app import show_app_page
 
 # --- Movie Data ---
 movies = [
@@ -40,14 +42,18 @@ def prev_movie():
 	show_movie(current_index)
 
 def select_movie():
-	selected = movies[current_index]
-	messagebox.showinfo("Selected", f"You selected: {selected['title']}")
-	import subprocess
-	import sys
-	subprocess.call(["python", "seat.py", selected['title']])
-	 # Close the main page after selection
-	# Here, you can call seat booking logic and pass selected movie info
+    selected = movies[current_index]
+    # hide the whole main area
+    root._main_frame.pack_forget()
+    show_seat_page(root, selected['title'])
 
+def select_food():
+	root._main_frame.pack_forget()
+	show_food_page(root, checkout_callback=None, json_path="FoodDrinks.json")
+
+def select_app():
+	root._main_frame.pack_forget()
+	show_app_page(root)
 
 def auto_rotate():
 	if carousel_running:
@@ -57,13 +63,18 @@ def auto_rotate():
 # --- UI Setup ---
 root = ctk.CTk()
 root.title("Cinema Kiosk App")
-root.geometry("800x600")
+root.geometry("1200x700")
 
-carousel_frame = ctk.CTkFrame(root, width=350, height=260, corner_radius=15)
+main_frame = ctk.CTkFrame(root)
+main_frame.pack(fill="both", expand=True, pady=20)
+root._main_frame = main_frame   # store reference for seat page to restore
+
+carousel_frame = ctk.CTkFrame(main_frame, width=350, height=450, corner_radius=15)
 carousel_frame.pack(pady=40)
+carousel_frame.pack_propagate(False)
 
-image_label = ctk.CTkLabel(carousel_frame, text="", width=300, height=180)
-image_label.pack(pady=(20, 10))
+image_label = ctk.CTkLabel(carousel_frame, text="", width=300, height=400)
+image_label.pack(pady=(0, 0))
 image_label.bind("<Button-1>", lambda event: select_movie())
 
 # --- Hover effect ---
@@ -85,7 +96,7 @@ image_label.bind("<Leave>", on_image_leave)
 title_label = ctk.CTkLabel(carousel_frame, text="", font=("Arial", 18, "bold"))
 title_label.pack(pady=5)
 
-btn_frame = ctk.CTkFrame(root)
+btn_frame = ctk.CTkFrame(main_frame)
 btn_frame.pack(pady=10)
 
 prev_btn = ctk.CTkButton(btn_frame, text="\u25C0", command=prev_movie, width=60, font=("Arial", 24))
@@ -93,6 +104,18 @@ prev_btn.grid(row=0, column=0, padx=10)
 
 next_btn = ctk.CTkButton(btn_frame, text="\u25B6", command=next_movie, width=60, font=("Arial", 24))
 next_btn.grid(row=0, column=2, padx=10)
+
+btn2_frame = ctk.CTkFrame(main_frame)
+btn2_frame.pack(pady=10)
+
+food_btn = ctk.CTkButton(btn2_frame, text="Order Food", command=lambda: select_food(), width=200, height=50, font=("Arial", 18))
+food_btn.grid(row=0, column=0, padx=10)
+
+btn3_frame = ctk.CTkFrame(main_frame)
+btn3_frame.pack(pady=10, padx=10)
+
+app_btn = ctk.CTkButton(btn3_frame, text="Movie similarity finder", command=lambda: select_app(), width=200, height=50, font=("Arial", 18))
+app_btn.grid(row=0, column=0, padx=10)
 
 show_movie(current_index)
 root.after(3000, auto_rotate)
