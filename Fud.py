@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox, filedialog, ttk
+import customtkinter as ctk
 import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
@@ -304,9 +305,10 @@ def show_food_page(parent, checkout_callback=None, json_path="FoodDrinks.json"):
     cart_title = tk.Label(cart_frame, text="Your Cart", font=("Helvetica", 18, "bold"), bg="#2d3748", fg=MainFG)
     cart_title.grid(row=0, column=0, pady=10, sticky="ew")
 
-    pay_btn = tk.Button(cart_frame, text="Pay", font=("Helvetica", 14, "bold"),
-                        bg="#6b7280", fg="#ffffff", command=lambda:checkout())
-    pay_btn.grid(row=1, column=0, sticky="ew", padx=10, pady=(0,5))
+    back_btn = tk.Button(cart_frame, text="Back", font=("Helvetica", 14, "bold"),
+                        bg="#6b7280", fg="#ffffff", command=lambda:go_back())
+    back_btn.grid(row=1, column=0, sticky="ew", padx=10, pady=(0,5))
+
 
     # Load data and populate menu
     data = open_json_db(json_path)
@@ -353,7 +355,7 @@ def show_food_page(parent, checkout_callback=None, json_path="FoodDrinks.json"):
     def update_cart_display():
         # clear dynamic widgets but keep title and pay button
         for w in list(cart_frame.winfo_children()):
-            if w not in (cart_title, pay_btn):
+            if w not in (cart_title, back_btn):
                 w.destroy()
 
         item_counts = {}
@@ -396,6 +398,14 @@ def show_food_page(parent, checkout_callback=None, json_path="FoodDrinks.json"):
             chk_btn = tk.Button(cart_frame, text="Checkout", font=("Helvetica", 14, "bold"),
                                 bg="#10b981", fg="#ffffff", command=lambda:checkout())
             chk_btn.grid(row=r+1, column=0, sticky="ew", padx=8, pady=6)
+
+    def go_back():
+        food_frame.pack_forget()
+        existing_main = getattr(parent, "_main_frame", None)
+        if existing_main is not None:
+            existing_main.pack(fill="both", expand=True)
+        else:
+            food_frame.destroy()
 
     # Expose update to inner scope and run initial update
     update_cart_display()
