@@ -395,7 +395,7 @@ def show_food_page(parent, checkout_callback=None, json_path="FoodDrinks.json"):
                                bg="#2d3748", fg="#10b981")
             tot_lbl.grid(row=r, column=0, sticky="ew", padx=8, pady=4)
 
-            chk_btn = tk.Button(cart_frame, text="Checkout", font=("Helvetica", 14, "bold"),
+            chk_btn = tk.Button(cart_frame, text="Confirm and Checkout", font=("Helvetica", 14, "bold"),
                                 bg="#10b981", fg="#ffffff", command=lambda:checkout())
             chk_btn.grid(row=r+1, column=0, sticky="ew", padx=8, pady=6)
 
