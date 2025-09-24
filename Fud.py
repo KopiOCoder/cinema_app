@@ -308,6 +308,7 @@ def show_food_page(parent, checkout_callback=None, json_path="FoodDrinks.json"):
     back_btn = tk.Button(cart_frame, text="Back", font=("Helvetica", 14, "bold"),
                         bg="#6b7280", fg="#ffffff", command=lambda:go_back())
     back_btn.grid(row=1, column=0, sticky="ew", padx=10, pady=(0,5))
+    back_btn.grid_remove()
 
 
     # Load data and populate menu

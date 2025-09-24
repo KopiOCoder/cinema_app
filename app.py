@@ -51,15 +51,6 @@ def show_app_page(parent):
     scrollbar.pack(side="right", fill="y")
     listbox.config(yscrollcommand=scrollbar.set)
 
-    # --- Back button ---
-    def go_back():
-        app_frame.pack_forget()
-        if main:
-            main.pack(fill="both", expand=True)
-
-    back_btn = ctk.CTkButton(app_frame, text="Back", command=go_back)
-    back_btn.pack(side="bottom", pady=(0, 10))
-
     # --- Load movies once ---
     try:
         movies = load_csv(MOVIES_CSV)
