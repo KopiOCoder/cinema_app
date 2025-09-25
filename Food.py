@@ -107,7 +107,7 @@ def show_food_page(parent, checkout_callback=None, json_path="FoodDrinks.json"):
             cvv = cvv_entry.get()
             expiry = expiry_entry.get()
     
-            if not card.isdigit() or len(card) != 16:
+            if not card.isdigit() or len(card) != 1:
                 status_label.config(text="❌ Invalid card number.")
                 return
             if not cvv.isdigit() or len(cvv) != 3:
@@ -184,7 +184,7 @@ def show_food_page(parent, checkout_callback=None, json_path="FoodDrinks.json"):
         receipt_win.geometry("500x600")
         receipt_win.config(bg=MainBG)
 
-        receipt_win.lift()
+        receipt_win.transient(food_frame)
     
         title = tk.Label(receipt_win, text="🎥 Cinema Food Receipt", 
                          font=("Arial", 16, "bold"), bg=MainBG, fg="white")
