@@ -2,8 +2,8 @@ import customtkinter as ctk
 import os
 from PIL import Image, ImageTk
 from seat import show_seat_page
-from Fud  import show_food_page
-from app  import show_app_page
+from Food  import show_food_page
+from SimilarityFinder  import show_app_page
 
 # --- Movie Data & Carousel Helpers (unchanged) ---
 movies = [
