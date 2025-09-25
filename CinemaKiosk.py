@@ -43,9 +43,17 @@ def auto_rotate():
         next_movie()
         root.after(3000, auto_rotate)
         
-def select_movie(event=None):
+def select_movie(index):
     main_frame.pack_forget()
-    show_seat_page(root, movies[current_index]["title"])
+    food_frame.pack_forget()
+    sim_frame.pack_forget()
+    for f in seat_frames:
+        f.pack_forget()
+    
+    # Show only the selected one
+    seat_frames[index].pack(
+        side="left", fill="both", expand=True, padx=20, pady=20
+    )
 
 def highlight(tab_key):
     for key, btn in tabs.items():
@@ -57,18 +65,24 @@ def on_movies():
     highlight("movies")
     sim_frame.pack_forget()
     food_frame.pack_forget()
+    for f in seat_frames:
+        f.pack_forget()
     main_frame.pack(side="left", fill="both", expand=True, padx=20, pady=20)
 
 def on_food():
     highlight("food")
     sim_frame.pack_forget()
     main_frame.pack_forget()
+    for f in seat_frames:
+        f.pack_forget()
     food_frame.pack(side="left", fill="both", expand=True, padx=20, pady=20)
 
 def on_similarity():
     highlight("sim")
     main_frame.pack_forget()
     food_frame.pack_forget()
+    for f in seat_frames:
+        f.pack_forget()
     sim_frame.pack(side="left", fill="both", expand=True, padx=20, pady=20)
 
 # --- App setup ---
@@ -112,7 +126,10 @@ carousel_frame.pack_propagate(False)
 
 image_label = ctk.CTkLabel(carousel_frame, text="", width=300, height=400)
 image_label.pack()
-image_label.bind("<Button-1>", select_movie)
+image_label.bind(
+    "<Button-1>",
+    lambda e: select_movie(current_index)
+)
 
 title_label = ctk.CTkLabel(carousel_frame, text="", font=("Arial", 18, "bold"))
 title_label.pack(pady=5)
@@ -134,7 +151,15 @@ root.after(3000, auto_rotate)
 
 # 3) Pre‐build one similarity frame
 sim_frame = ctk.CTkFrame(root)
-food_frame = ctk.CTkFrame(root)  # if you had a prebuilt food_frame do the same trick there
+food_frame = ctk.CTkFrame(root) 
+seat_frames = []
+for movie in movies:
+    frame = ctk.CTkFrame(root)
+    # Populate it immediately with its movie title
+    show_seat_page(frame, movie["title"])
+    # Start hidden
+    frame.pack_forget()
+    seat_frames.append(frame)
 # don't pack it yet!
 # fill it only once
 show_app_page(sim_frame)

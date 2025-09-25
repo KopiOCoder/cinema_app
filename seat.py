@@ -45,14 +45,14 @@ def book_seat(db_path, seat_name):
     cnct.commit()
     cnct.close()
 
-def show_seat_page(root, movie_title):
-    root._main_frame.pack_forget()
+def show_seat_page(parent, movie_title):
+        
     db_path = f"{movie_title.replace(' ', '_')}.db"
     init_db(db_path)
     seat_status = get_seat_status(db_path)
     selected_seats = []
 
-    seat_frame = ctk.CTkFrame(root)
+    seat_frame = ctk.CTkFrame(parent)
     seat_frame.pack(side="left", fill="both", expand=True, padx=20, pady=20)
 
     seat_label = ctk.CTkLabel(seat_frame, text=f"Seat Selection for {movie_title}", font=("Arial", 20, "bold"))
@@ -106,25 +106,12 @@ def show_seat_page(root, movie_title):
         subprocess.call(["python", "PaymentandFare.py", movie_title, str(seat_count), seats_str])
         messagebox.showinfo("Payment", "Payment successful! Seats booked.")
         seat_frame.pack_forget()
-        root._main_frame.pack(
+        parent._main_frame.pack(
             side="left", fill="both", expand=True, padx=20, pady=20
         )
         # Optionally, call a callback to go back to main page
 
     pay_btn = ctk.CTkButton(seat_frame, text="Proceed to Payment", command=proceed_payment)
     pay_btn.pack(pady=20)
-
-    def go_back():
-        seat_frame.pack_forget()
-        root._main_frame.pack(
-            side="left",
-            fill="both",
-            expand=True,
-            padx=20,
-            pady=20
-        )
-
-    back_btn = ctk.CTkButton(seat_frame, text="Back", command=go_back)
-    back_btn.pack(pady=4)
 
     return seat_frame
