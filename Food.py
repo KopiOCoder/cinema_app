@@ -89,7 +89,7 @@ def show_food_page(parent, checkout_callback=None, json_path="FoodDrinks.json"):
         card_entry.pack()
     
         tk.Label(pay_win, text="CVV (3 digits):", bg=MainBG, fg="white").pack(pady=2)
-        cvv_entry = tk.Entry(pay_win, show="*")
+        cvv_entry = tk.Entry(pay_win)
         cvv_entry.pack()
     
         tk.Label(pay_win, text="Expiry Date (MM/YY):", bg=MainBG, fg="white").pack(pady=2)
