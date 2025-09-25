@@ -75,7 +75,7 @@ def on_similarity():
 root = ctk.CTk()
 root.title("Cinema Kiosk App")
 root.geometry("1200x700")
-
+ctk.set_appearance_mode("Dark")
 # 1) Sidebar
 sidebar = ctk.CTkFrame(root, width=100)
 sidebar.pack(side="left", fill="y")
