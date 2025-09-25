@@ -52,6 +52,8 @@ def show_seat_page(parent, movie_title):
     seat_status = get_seat_status(db_path)
     selected_seats = []
 
+    root = parent.winfo_toplevel()
+
     seat_frame = ctk.CTkFrame(parent)
     seat_frame.pack(side="left", fill="both", expand=True, padx=20, pady=20)
 
@@ -105,11 +107,14 @@ def show_seat_page(parent, movie_title):
         seat_count = len(selected_seats)
         subprocess.call(["python", "PaymentandFare.py", movie_title, str(seat_count), seats_str])
         messagebox.showinfo("Payment", "Payment successful! Seats booked.")
-        seat_frame.pack_forget()
-        parent._main_frame.pack(
-            side="left", fill="both", expand=True, padx=20, pady=20
-        )
+        go_back()
         # Optionally, call a callback to go back to main page
+
+    def go_back():
+        root.show_frame("main")
+
+    back_btn = ctk.CTkButton(seat_frame, text="← Back", command=go_back)
+    back_btn.pack(pady=20)
 
     pay_btn = ctk.CTkButton(seat_frame, text="Proceed to Payment", command=proceed_payment)
     pay_btn.pack(pady=20)
