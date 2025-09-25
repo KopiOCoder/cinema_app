@@ -159,8 +159,7 @@ class SummaryFrame(tk.Frame):
         self.summary_label.pack(pady=5)
 
         tk.Button(self, text="Proceed to Payment", command=lambda: controller.show_frame("PaymentFrame"), bg="#10b981", fg="white", activebackground="#059669").pack(pady=10)
-        tk.Button(self, text="Cancel Order", command=self.cancel_order, bg="#10b981", fg="white", activebackground="#059669").pack(pady=5)
-
+        
     def tkraise(self, *args, **kwargs):
         #Update summary 
         adults = self.controller.num_adults
@@ -169,10 +168,6 @@ class SummaryFrame(tk.Frame):
         summary_text = f"Adult Tickets: {adults} x $15.00\nChild Tickets: {children} x $10.00\n\nTotal: ${total:.2f}"
         self.summary_label.config(text=summary_text)
         super().tkraise(*args, **kwargs)
-
-    def cancel_order(self):
-        messagebox.showinfo("Order Cancelled", "Order cancelled. Thank you for your visit!")
-        self.controller.show_frame("TicketSelectionFrame")
 
 #Frame 3: Payment
 class PaymentFrame(tk.Frame):
