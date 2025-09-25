@@ -4,6 +4,7 @@ import math
 def create_features(genres):
     features = [0.0] * 18
     
+    # encoding genres into hardcoded binary
     if "Comedy" in genres: features[0] = 1.0
     if "Action" in genres: features[1] = 1.0
     if "Drama" in genres: features[2] = 1.0
@@ -32,6 +33,7 @@ def load_csv(filename):
         reader = csv.reader(file)
         next(reader)  
         
+        # get all movies: id, title, genres and feature vector 
         for row in reader:
             movie = {
                 'id': int(row[0]),
@@ -48,6 +50,7 @@ def similarity(features1, features2):
     norm1 = 0.0
     norm2 = 0.0
     
+    # compute cosine similarity between two movie feature vectors 
     for i in range(len(features1)):
         dot_product += features1[i] * features2[i]
         norm1 += features1[i] * features1[i]
@@ -58,6 +61,7 @@ def similarity(features1, features2):
     
     return dot_product / (math.sqrt(norm1) * math.sqrt(norm2))
 
+# loop through all movies and compute similarity to the target movie 
 def inference(movies, target_id):
     target_movie = None
     for movie in movies:
@@ -78,6 +82,7 @@ def inference(movies, target_id):
                     'similarity': sim
                 })
 
+    # filter and sort by 20 most similar movies 
     results.sort(key=lambda x: x['similarity'], reverse=True)
     results = results[:20]
     return {'target_title': target_movie['title'], 'similar_movies': results}
