@@ -80,21 +80,22 @@ root.geometry("1200x700")
 sidebar = ctk.CTkFrame(root, width=100)
 sidebar.pack(side="left", fill="y")
 
-active_bg = "#1f6aa5"
-inactive_bg = sidebar.cget("fg_color")
+active_bg = "#1f6aa5"  
+inactive_bg = "#616161"  
+hover_bg = "#5477d1"    
 
 tabs = {}
 tabs["movies"] = ctk.CTkButton(
     sidebar, text="🎬\nMovies", fg_color=inactive_bg,
-    hover_color="#555", width=80, height=80, command=on_movies
+    hover_color=hover_bg, width=80, height=80, command=on_movies
 )
 tabs["food"]    = ctk.CTkButton(
     sidebar, text="🍔\nFood", fg_color=inactive_bg,
-    hover_color="#555", width=80, height=80, command=on_food
+    hover_color=hover_bg, width=80, height=80, command=on_food
 )
 tabs["sim"]     = ctk.CTkButton(
     sidebar, text="🔍\nSimilarity", fg_color=inactive_bg,
-    hover_color="#555", width=80, height=80, command=on_similarity
+    hover_color=hover_bg, width=80, height=80, command=on_similarity
 )
 
 for btn in tabs.values():
