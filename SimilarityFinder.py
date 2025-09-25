@@ -23,7 +23,7 @@ def show_app_page(parent):
     # --- Header ---
     header = ctk.CTkLabel(
         app_frame,
-        text="Movie Recommender",
+        text="Movie Similarity Finder",
         font=("Arial", 24, "bold")
     )
     header.pack(pady=(0, 20))
