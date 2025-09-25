@@ -15,6 +15,7 @@ seat_count = int(sys.argv[2]) if len(sys.argv) > 2 else 0
 selected_seats = [s for s in sys.argv[3].split(",") if s] if len(sys.argv) > 3 else []
 db_path = f"{movie_title.replace(' ', '_')}.db"
 
+#Try to book a seat in the database, if fails print error
 def book_seat(seat_name):
     try:
 
@@ -118,16 +119,18 @@ class TicketSelectionFrame(tk.Frame):
             adults = int(self.adult_entry.get())
             children = int(self.child_entry.get())
 
+            #make sure no negative tickets quantity
             if adults < 0 or children < 0:
                 self.status_label.config(text="Number of tickets cannot be negative.")
                 return
             
+            #make sure at least one ticket is selected
             total_tickets = adults + children
             if total_tickets == 0:
                 self.status_label.config(text="Please select at least one ticket.")
                 return
             
-            #improved TICKET VALIDATION  
+            #improved TICKET VALIDATION (make sure it is same amount)
             if total_tickets != self.controller.selected_seats_count:
                 self.status_label.config(text=f"The total number of tickets ({total_tickets}) must match the number of seats selected ({self.controller.selected_seats_count}).")
                 return
@@ -207,6 +210,7 @@ class PaymentFrame(tk.Frame):
         #starts the countdown and timer when the frame is shown
         self.start_countdown()
 
+        #clear previous input (so nobody see ur cards :D)
         self.progress_bar.stop()
         self.progress_bar.pack_forget()
         self.status_label.config(text="")
