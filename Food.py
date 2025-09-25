@@ -109,7 +109,7 @@ def show_food_page(parent, checkout_callback=None, json_path="FoodDrinks.json"):
             cvv = cvv_entry.get()
             expiry = expiry_entry.get()
     
-            if not card.isdigit() or len(card) != 1:
+            if not card.isdigit() or len(card) != 16:
                 status_label.config(text="❌ Invalid card number.")
                 return
             if not cvv.isdigit() or len(cvv) != 3:
