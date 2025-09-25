@@ -103,7 +103,7 @@ def show_seat_page(root, movie_title):
         import subprocess
         seats_str = ",".join(selected_seats)
         seat_count = len(selected_seats)
-        subprocess.call(["python", "mingsong.py", movie_title, str(seat_count), seats_str])
+        subprocess.call(["python", "PaymentandFare.py", movie_title, str(seat_count), seats_str])
         messagebox.showinfo("Payment", "Payment successful! Seats booked.")
         seat_frame.pack_forget()
         root._main_frame.pack(
