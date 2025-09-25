@@ -2,6 +2,7 @@ import customtkinter as ctk
 from tkinter import messagebox
 import sqlite3
 import os
+import re
 
 rows_top = ["A", "B", "C", "D"]
 rows_bottom = ["E", "F", "G"]
@@ -46,8 +47,8 @@ def book_seat(db_path, seat_name):
     cnct.close()
 
 def show_seat_page(parent, movie_title):
-        
-    db_path = f"{movie_title.replace(' ', '_')}.db"
+    safe_title = re.sub(r'[^a-zA-Z0-9_]', "", movie_title)  # replace bad chars with ""
+    db_path = f"{safe_title}.db"
     init_db(db_path)
     seat_status = get_seat_status(db_path)
     selected_seats = []

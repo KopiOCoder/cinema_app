@@ -9,12 +9,13 @@ from reportlab.lib.enums import TA_CENTER
 import uuid
 import sys
 import sqlite3
+import re
 
 movie_title = sys.argv[1] if len(sys.argv) > 1 else "[No Movie Selected]"
 seat_count = int(sys.argv[2]) if len(sys.argv) > 2 else 0
 selected_seats = [s for s in sys.argv[3].split(",") if s] if len(sys.argv) > 3 else []
-db_path = f"{movie_title.replace(' ', '_')}.db"
-
+safe_title = re.sub(r'[^a-zA-Z0-9_]', "", movie_title)  # replace bad chars with ""
+db_path = f"{safe_title}.db"
 #Try to book a seat in the database, if fails print error
 def book_seat(seat_name):
     try:
