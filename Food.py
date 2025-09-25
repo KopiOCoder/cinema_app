@@ -58,7 +58,7 @@ def show_food_page(parent, checkout_callback=None, json_path="FoodDrinks.json"):
         
         pay_win = tk.Toplevel(food_frame)
         pay_win.title("💳 Card Payment")
-        pay_win.geometry("400x400")
+        pay_win.geometry("500x500")
         pay_win.config(bg=MainBG)
         pay_win.grab_set()
     
@@ -183,6 +183,8 @@ def show_food_page(parent, checkout_callback=None, json_path="FoodDrinks.json"):
         receipt_win.title("🎥 Cinema Receipt")
         receipt_win.geometry("500x600")
         receipt_win.config(bg=MainBG)
+
+        receipt_win.lift()
     
         title = tk.Label(receipt_win, text="🎥 Cinema Food Receipt", 
                          font=("Arial", 16, "bold"), bg=MainBG, fg="white")
