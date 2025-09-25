@@ -140,6 +140,6 @@ food_frame = ctk.CTkFrame(root)  # if you had a prebuilt food_frame do the same 
 show_app_page(sim_frame)
 show_food_page(food_frame)  # just to test; remove this line
 
-highlight("movies")
+highlight("movies") 
 
 root.mainloop()

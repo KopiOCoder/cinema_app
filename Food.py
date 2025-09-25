@@ -61,6 +61,8 @@ def show_food_page(parent, checkout_callback=None, json_path="FoodDrinks.json"):
         pay_win.geometry("500x500")
         pay_win.config(bg=MainBG)
         pay_win.grab_set()
+
+        pay_win.protocol("WM_DELETE_WINDOW", lambda: None)
     
         tk.Label(pay_win, text="💳 Card Payment", font=("Arial", 16, "bold"), bg=MainBG, fg="white").pack(pady=10)
     
@@ -176,6 +178,7 @@ def show_food_page(parent, checkout_callback=None, json_path="FoodDrinks.json"):
             show_approval()
     
         tk.Button(pay_win, text="Pay", command=process_payment, bg="#10b981", fg="white", font=("Arial", 12, "bold")).pack(pady=20)
+        tk.Button(pay_win, text="Cancel Payment", command=lambda: pay_win.destroy(), bg="#6b7280", fg="white", font=("Arial", 12, "bold")).pack(pady=5)
     
     def show_receipt(cart_items, total_price, last_four):
         

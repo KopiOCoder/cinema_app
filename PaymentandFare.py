@@ -50,6 +50,8 @@ class CinemaKiosk(tk.Tk):
         self.resizable(False, False)
         self.config(bg="#1f2937")
 
+        #prevent user to close the window 
+        self.protocol("WM_DELETE_WINDOW", lambda: None)
         
         #shared variables
         self.num_adults = 0
@@ -205,6 +207,7 @@ class PaymentFrame(tk.Frame):
         self.status_label.pack()
 
         self.progress_bar = ttk.Progressbar(self, orient="horizontal", mode="indeterminate")
+
 
     def tkraise(self, *args, **kwargs):
         #starts the countdown and timer when the frame is shown
