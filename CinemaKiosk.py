@@ -47,6 +47,7 @@ def auto_rotate():
 root = ctk.CTk()
 root.title("Cinema Kiosk App")
 root.geometry("1200x700")
+ctk.set_appearance_mode("Dark")
 
 # 1) Create a dict of all your pages
 frames = {}
