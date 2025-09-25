@@ -113,10 +113,10 @@ def show_seat_page(parent, movie_title):
     def go_back():
         root.show_frame("main")
 
-    back_btn = ctk.CTkButton(seat_frame, text="← Back", command=go_back)
+    back_btn = ctk.CTkButton(seat_frame, text="← Back", command=go_back, width=120, height=30)
     back_btn.pack(pady=20)
 
-    pay_btn = ctk.CTkButton(seat_frame, text="Proceed to Payment", command=proceed_payment)
+    pay_btn = ctk.CTkButton(seat_frame, text="Proceed to Payment", command=proceed_payment, width=160, height=50)
     pay_btn.pack(pady=20)
 
     return seat_frame
